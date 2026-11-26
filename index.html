@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英語冒險島 · English Quest</title>
+  <meta name="description" content="國小英文闖關遊戲。一起練習大小寫字母、生活單字、基礎句型和音節。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400;1,700&family=Comic+Neue:wght@700&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/adventure.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧭</text></svg>">
+</head>
+<body>
+
+  <main id="landing-screen" class="landing-screen adventure-home">
+    <header class="adventure-header">
+      <div class="adventure-brand" lang="en">
+        <span class="adventure-compass" aria-hidden="true"></span>
+        <span>English Quest</span>
+      </div>
+      <button type="button" class="btn-leaderboard" id="btn-landing-leaderboard">
+        <span aria-hidden="true">🏆</span> 道館排行榜
+      </button>
+    </header>
+
+    <section class="adventure-hero" aria-labelledby="home-title">
+      <div class="adventure-hero-copy">
+        <h1 id="home-title">英語冒險島</h1>
+        <p>從大小寫字母到生活單字，<br class="hero-line-break">選一個關卡，照自己的步調闖關！</p>
+        <a class="adventure-start" href="#adventure-modes">選擇關卡</a>
+      </div>
+      <img class="adventure-hero-image" src="assets/quest-forest.webp" width="1200" height="800" alt="小貓熊帶著羅盤和故事書，在森林裡準備探險">
+    </section>
+
+    <section class="adventure-modes" id="adventure-modes" aria-labelledby="modes-title">
+      <h2 id="modes-title">選擇關卡</h2>
+      <p class="adventure-section-note">答錯可以再試一次。前 3 個關卡各有 6 題，完成就能收集星星。</p>
+      <div class="adventure-grid">
+        <button type="button" class="quest-card quest-letters" data-practice-mode="letters">
+          <span class="quest-symbol" aria-hidden="true" lang="en">Aa</span>
+          <span class="quest-title">字母配對</span>
+          <span class="quest-description">找出對應的大小寫字母</span>
+          <span class="quest-best" data-practice-best="letters">尚未挑戰</span>
+        </button>
+        <button type="button" class="quest-card quest-words" data-practice-mode="words">
+          <span class="quest-symbol quest-emoji" aria-hidden="true">🍎</span>
+          <span class="quest-title">生活單字</span>
+          <span class="quest-description">認識動物、食物和身邊的物品</span>
+          <span class="quest-best" data-practice-best="words">尚未挑戰</span>
+        </button>
+        <button type="button" class="quest-card quest-sentences" data-practice-mode="sentences">
+          <span class="quest-symbol" aria-hidden="true" lang="en"><span class="quest-speech">Hi!</span></span>
+          <span class="quest-title">基礎句型</span>
+          <span class="quest-description">填入正確的字，讀懂簡短句子</span>
+          <span class="quest-best" data-practice-best="sentences">尚未挑戰</span>
+        </button>
+        <a class="quest-card quest-dojo" href="#dojo-characters">
+          <span class="quest-symbol" aria-hidden="true" lang="en">pan·cake</span>
+          <span class="quest-title">音節道館</span>
+          <span class="quest-description">在字母之間下刀，拆開單字</span>
+          <span class="quest-best">選擇冒險夥伴</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="adventure-dojo" id="dojo-characters" aria-labelledby="dojo-characters-title">
+      <div class="adventure-dojo-heading">
+        <div>
+          <h2 id="dojo-characters-title">音節道館夥伴</h2>
+          <p class="adventure-section-note">選一位夥伴練習拆音節，挑戰五條腰帶。</p>
+        </div>
+      <div class="player-name-bar">
+        <span class="player-icon-badge" aria-hidden="true">👤</span>
+        <label for="player-select-dropdown" id="player-bar-label">小勇士</label>
+        <select id="player-select-dropdown" class="player-select-dropdown" title="選擇已有的小勇士或新增">
+        </select>
+        <div id="new-player-input-wrap" class="new-player-input-wrap" style="display: none;">
+          <input type="text" id="player-name-input" class="player-name-input" aria-label="新小勇士暱稱" placeholder="輸入暱稱" autocomplete="off" maxlength="10">
+          <button type="button" id="btn-confirm-new-player" class="btn-player-action btn-confirm" title="確定新增">✔</button>
+          <button type="button" id="btn-cancel-new-player" class="btn-player-action btn-cancel" title="取消">✖</button>
+        </div>
+      </div>
+      </div>
+      <div class="character-select-row">
+        <article class="char-card" data-theme="dojo">
+          <div class="char-card-inner">
+            <div class="char-preview" id="preview-poby" aria-hidden="true"></div>
+            <h3 class="char-name">波比 <small lang="en">Poby</small></h3>
+            <p class="char-role">道館小狐獸</p>
+            <button type="button" class="char-select-btn btn-dojo">和波比出發</button>
+          </div>
+        </article>
+        <article class="char-card" data-theme="sushi">
+          <div class="char-card-inner">
+            <div class="char-preview" id="preview-mimi" aria-hidden="true"></div>
+            <h3 class="char-name">咪喵 <small lang="en">Mimi</small></h3>
+            <p class="char-role">壽司三花貓</p>
+            <button type="button" class="char-select-btn btn-sushi">和咪喵出發</button>
+          </div>
+        </article>
+        <article class="char-card" data-theme="magic">
+          <div class="char-card-inner">
+            <div class="char-preview" id="preview-lulu" aria-hidden="true"></div>
+            <h3 class="char-name">露露 <small lang="en">Lulu</small></h3>
+            <p class="char-role">星光魔法兔</p>
+            <button type="button" class="char-select-btn btn-magic">和露露出發</button>
+          </div>
+        </article>
+        <article class="char-card" data-theme="brawl">
+          <div class="char-card-inner">
+            <div class="char-preview" id="preview-bibi" aria-hidden="true"></div>
+            <h3 class="char-name">嗶嗶 <small lang="en">Bibi</small></h3>
+            <p class="char-role">棒球藍松鴉</p>
+            <button type="button" class="char-select-btn btn-brawl">和嗶嗶出發</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <main id="practice-app" class="practice-app" aria-labelledby="practice-title" hidden>
+    <header class="practice-header">
+      <button type="button" class="practice-home" data-practice-home>回到首頁</button>
+      <h1 id="practice-title" tabindex="-1">冒險關卡</h1>
+    </header>
+    <div id="practice-view" class="practice-view"></div>
+  </main>
+
+  <!-- ============================================================ -->
+  <!-- 遊戲主體視窗 (初始強制隱藏，選完角色後才跳入顯示！)          -->
+  <!-- ============================================================ -->
+  <main id="game-app" class="game-app hidden" style="display: none;">
+    
+    <!-- 和風道館背景裝飾與櫻花 -->
+    <div class="dojo-background" id="dojo-background">
+      <div class="dojo-wall-top"></div>
+      <div class="dojo-floor-wood"></div>
+    </div>
+
+    <!-- 頂部資訊與控制欄 -->
+    <header class="dojo-header">
+      <div class="header-left">
+        <!-- 返回選角按鈕 -->
+        <button type="button" class="btn-back-to-select" id="btn-back-select" aria-label="回到首頁" title="回到首頁">
+          <span aria-hidden="true">⌂</span>
+        </button>
+        <div class="dojo-title-badge">
+          <span class="dojo-logo-icon" id="game-logo-icon">🥋</span>
+          <div class="dojo-title-text">
+            <h1 id="game-title-text" lang="en">SYLLABLE DOJO</h1>
+            <p id="game-subtitle-text">音節道館大冒險</p>
+          </div>
+        </div>
+
+        <!-- 腰帶階級選擇按鈕 (點擊展開關卡) -->
+        <button type="button" class="belt-selector" id="belt-selector-btn" aria-controls="level-select-modal" aria-expanded="false" title="切換道館等級">
+          <span class="belt-indicator" id="current-belt-indicator"></span>
+          <span class="belt-name" id="current-belt-name">白帶修煉</span>
+          <span aria-hidden="true" class="belt-chevron"></span>
+        </button>
+      </div>
+
+      <!-- 頂部右側控制項 -->
+      <div class="header-right">
+        <!-- 當前玩家徽章 -->
+        <div class="current-player-badge" id="current-player-badge" title="當前挑戰者">
+          <span class="player-avatar-icon" id="player-avatar-icon">👑</span>
+          <span class="player-name-text" id="current-player-name-text">小勇士</span>
+        </div>
+
+        <!-- 連擊數 -->
+        <div class="combo-display">
+          <span class="combo-fire">🔥</span>
+          <span id="combo-text">連擊 x0</span>
+        </div>
+
+        <!-- 💡 提示開關按鈕 -->
+        <button class="btn-toggle-hint active" id="btn-toggle-hint" aria-pressed="true" title="開啟或關閉母音與規則提示">
+          <span>💡 提示：開啟</span>
+        </button>
+
+        <!-- 查看排行榜按鈕 -->
+        <button class="btn-icon-circle" id="btn-game-leaderboard" title="查看道場榮譽排行榜">🏆</button>
+
+        <!-- 靜音開關 -->
+        <button class="btn-icon-circle" id="btn-mute" aria-label="靜音" aria-pressed="false" title="靜音 / 開啟聲音">🔊</button>
+      </div>
+    </header>
+
+    <!-- 關卡規則指示橫條 -->
+    <section class="rule-banner">
+      <div class="rule-title">
+        <span id="rule-title-text">🥋 白帶初階：複合字道場 (Compound Words)</span>
+      </div>
+      <div class="rule-progress" id="rule-progress-text">第 1 / 10 題</div>
+    </section>
+
+    <!-- 道館修煉競技場 (Arena) -->
+    <div class="dojo-arena">
+      
+      <!-- 上半部：修煉木板懸掛區 -->
+      <div class="target-area">
+        <div class="board-container" id="board-container"></div>
+        <p class="dojo-instruction">選擇兩個字母中間的切點，把單字分成兩段。</p>
+        <div class="hint-bubble" id="hint-bubble" aria-live="polite" aria-atomic="true">
+          <span>💡 提示：兩個完整單字合在一起，從它們相接處切開！</span>
+        </div>
+        <button type="button" class="btn-primary-large btn-next-word" id="btn-next-word" hidden>下一題</button>
+      </div>
+
+      <!-- 下半部：角色與字義互動區 -->
+      <div class="character-stage">
+        <div id="mascot-container"></div>
+        <div class="word-info-card">
+          <div class="meaning-text" id="meaning-text">鬆餅 🥞</div>
+          <button class="speak-word-btn" id="btn-speak-word" title="再聽一次單字發音">
+            <span>🔊 聽發音</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 關卡選單下拉彈窗 -->
+    <div class="level-select-modal" id="level-select-modal"></div>
+
+    <!-- 晉級榮耀彈窗 -->
+    <div class="modal-overlay" id="upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="upgrade-modal-title">
+      <div class="modal-content">
+        <div class="modal-badge-icon">🎖️</div>
+        <h2 class="modal-title" id="upgrade-modal-title">恭喜晉級！</h2>
+        <p class="modal-desc" id="upgrade-modal-desc">
+          你已經完全掌握了此道館的音節奧義！
+        </p>
+        <button class="btn-primary-large" id="btn-next-belt">挑戰下一條腰帶</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ============================================================ -->
+  <!-- 排行榜彈窗 (Leaderboard Modal，放置於最外層以供首頁與遊戲隨時開啟) -->
+  <!-- ============================================================ -->
+  <div class="modal-overlay" id="leaderboard-modal" role="dialog" aria-modal="true" aria-labelledby="leaderboard-modal-title">
+    <div class="modal-content leaderboard-modal-content">
+      <div class="leaderboard-header">
+        <div class="modal-badge-icon">🏆</div>
+        <h2 class="modal-title" id="leaderboard-modal-title">道館排行榜</h2>
+        <p class="modal-desc">這個瀏覽器上的音節道館紀錄。</p>
+      </div>
+
+      <div class="leaderboard-list-wrap">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>名次</th>
+              <th>小勇士</th>
+              <th>角色</th>
+              <th>最高腰帶</th>
+              <th>劈開單字</th>
+              <th>最高連擊</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-tbody">
+            <!-- 由 JS 動態注入 -->
+          </tbody>
+        </table>
+        <div id="leaderboard-empty" class="leaderboard-empty" style="display:none;">
+          <span>🥋 還沒有紀錄喔，選個角色出發斬擊吧！</span>
+        </div>
+      </div>
+
+      <div class="leaderboard-footer">
+        <button class="btn-clear-records" id="btn-clear-records" title="清除所有排行榜紀錄">清空紀錄</button>
+        <button class="btn-primary-large" id="btn-close-leaderboard">關閉 ✖</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 載入模組化腳本 (依序載入詞庫、音效、儲存、角色、核心遊戲) -->
+  <script src="js/words.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/character.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/practice-questions.js"></script>
+  <script src="js/practice.js"></script>
+</body>
+</html>

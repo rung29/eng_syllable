@@ -1,0 +1,518 @@
+:root {
+  --quest-ink: #17352e;
+  --quest-muted: #526961;
+  --quest-green: #176b56;
+  --quest-paper: #f6f8f1;
+  --quest-line: #dce6dc;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body:has(.adventure-home:not(.hidden):not([hidden])),
+body:has(.practice-app:not([hidden])) {
+  background: var(--quest-paper) !important;
+  align-items: flex-start;
+}
+
+.adventure-home,
+.practice-app {
+  color: var(--quest-ink);
+  min-height: 100svh;
+  width: min(1180px, 100%);
+  padding: 0 clamp(16px, 4vw, 40px) 48px;
+}
+
+.adventure-home {
+  display: block;
+  max-width: none;
+}
+
+.adventure-home :focus-visible,
+.practice-app :focus-visible {
+  outline: 3px solid #176b56;
+  outline-offset: 4px;
+}
+
+.adventure-header {
+  min-height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.adventure-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 700 1.35rem/1.1 'Fredoka', var(--font-main);
+  letter-spacing: -0.025em;
+}
+
+.adventure-compass {
+  display: grid;
+  width: 38px;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 12px;
+  background: #1d6654;
+}
+
+.adventure-compass::before {
+  content: "";
+  width: 22px;
+  aspect-ratio: 1;
+  background: #ffda7b;
+  clip-path: polygon(50% 0, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0 50%, 37% 37%);
+  transform: rotate(24deg);
+}
+
+.adventure-header .btn-leaderboard {
+  min-height: 44px;
+  padding: 8px 15px;
+  border: 1px solid #cfe0d4;
+  border-radius: 13px;
+  background: white;
+  color: var(--quest-ink);
+  box-shadow: none;
+  font-size: .875rem;
+}
+
+.adventure-header .btn-leaderboard:hover {
+  background: #e6f2e8;
+  box-shadow: none;
+  transform: none;
+}
+
+.adventure-hero {
+  display: grid;
+  grid-template-columns: 45% 55%;
+  min-height: 335px;
+  overflow: hidden;
+  isolation: isolate;
+  background: #164b41;
+  border-radius: 26px;
+}
+
+.adventure-hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 18px;
+  padding: clamp(30px, 5vw, 64px);
+  color: #fffceb;
+}
+
+.adventure-hero h1 {
+  font-size: clamp(2.3rem, 5.2vw, 4.4rem);
+  line-height: 1.1;
+  letter-spacing: .035em;
+}
+
+.adventure-hero p {
+  color: #e9f3df;
+  font-size: clamp(1rem, 1.55vw, 1.18rem);
+  line-height: 1.65;
+}
+
+.adventure-hero-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  object-position: 64% center;
+}
+
+.adventure-start {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 9px 22px;
+  border-radius: 13px;
+  background: #fbd269;
+  color: #263c27;
+  text-decoration: none;
+  font-weight: 800;
+  box-shadow: 0 3px 0 #ad7f28;
+}
+
+.adventure-start:hover { background: #ffe498; }
+.adventure-hero .adventure-start:focus-visible { outline-color: #fffceb; }
+
+.adventure-modes,
+.adventure-dojo {
+  margin-top: clamp(26px, 4.5vw, 45px);
+  scroll-margin-top: 16px;
+}
+
+.adventure-home h2 {
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  line-height: 1.28;
+  letter-spacing: .025em;
+}
+
+.adventure-section-note {
+  margin-top: 7px;
+  color: var(--quest-muted);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.adventure-grid,
+.adventure-dojo .character-select-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.quest-card {
+  display: flex;
+  min-height: 196px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  border: 1px solid var(--quest-line);
+  border-radius: 19px;
+  padding: 16px;
+  background: #fff;
+  color: var(--quest-ink);
+  text-align: left;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #e4ebe2;
+}
+
+.quest-card:hover { border-color: var(--quest-green); }
+
+.quest-symbol {
+  display: grid;
+  width: 100%;
+  min-height: 63px;
+  align-items: center;
+  justify-items: center;
+  margin-bottom: 6px;
+  border-radius: 11px;
+  background: var(--quest-tint);
+  color: var(--quest-accent);
+  font: 700 2.15rem/1 'Andika', var(--font-phonics);
+}
+
+.quest-letters { --quest-tint: #dcf0d8; --quest-accent: #285c3a; }
+.quest-words { --quest-tint: #fff0c5; --quest-accent: #75450c; }
+.quest-sentences { --quest-tint: #e8e4fa; --quest-accent: #4e4380; }
+.quest-dojo { --quest-tint: #dceef5; --quest-accent: #225768; }
+.quest-dojo .quest-symbol { font-size: 1.5rem; }
+.quest-emoji { font-size: 1.9rem; }
+
+.quest-speech {
+  position: relative;
+  padding: 2px 10px 5px;
+  border: 2px solid currentColor;
+  border-radius: 12px;
+  font-size: 1.32rem;
+}
+
+.quest-speech::after {
+  content: "";
+  position: absolute;
+  top: calc(100% - 3px);
+  left: 8px;
+  width: 7px;
+  height: 7px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+  background: var(--quest-tint);
+  transform: rotate(45deg);
+}
+
+.quest-title { font-size: 1.2rem; font-weight: 800; }
+.quest-description { color: var(--quest-muted); font-size: .94rem; line-height: 1.45; }
+.quest-best {
+  margin-top: auto;
+  padding-top: 5px;
+  color: var(--quest-accent);
+  font-size: .88rem;
+  font-weight: 750;
+}
+
+.adventure-dojo-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.adventure-dojo .player-name-bar {
+  max-width: 100%;
+  padding: 5px 9px;
+  border: 1px solid #cfe0d4;
+  border-radius: 12px;
+  box-shadow: none;
+  flex-wrap: wrap;
+}
+
+.adventure-dojo .player-select-dropdown {
+  min-height: 36px;
+  border-color: #d6e4d9;
+  background: #f5faf1;
+}
+
+.adventure-dojo .character-select-row {
+  max-width: none;
+  width: 100%;
+}
+
+.adventure-dojo .char-card {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+.adventure-dojo .char-card-inner {
+  height: 100%;
+  min-height: 0;
+  padding: 8px 8px 12px;
+  background: #fff;
+  border: 1px solid var(--quest-line);
+  border-radius: 16px;
+  box-shadow: none;
+  text-align: center;
+}
+
+.adventure-dojo .char-preview {
+  margin-bottom: 7px;
+  height: clamp(120px, 19vw, 158px);
+  border-radius: 11px;
+}
+
+.adventure-dojo .char-card[data-theme="dojo"] .char-preview {
+  background: radial-gradient(ellipse at 50% 38%, #fff8dd, #f5d2a1);
+}
+
+.adventure-dojo .char-card[data-theme="sushi"] .char-preview {
+  background: radial-gradient(ellipse at 50% 38%, #eef8e9, #c4e0ce);
+}
+
+.adventure-dojo .char-card[data-theme="magic"] .char-preview {
+  background: radial-gradient(ellipse at 50% 38%, #fcf3ff, #e6d7fb);
+}
+
+.adventure-dojo .char-card[data-theme="brawl"] .char-preview {
+  background: radial-gradient(ellipse at 50% 38%, #fdf0f6, #f3c8df);
+}
+
+.adventure-dojo .char-name { color: var(--quest-ink); font-size: 1.1rem; }
+.adventure-dojo .char-name small { color: var(--quest-muted); }
+.adventure-dojo .char-role { color: var(--quest-muted); font-size: .88rem; }
+.adventure-dojo .char-select-btn {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 6px;
+  padding: 6px;
+  border: 1px solid #cfe0d4;
+  border-radius: 10px;
+  background: #e9f3e7;
+  color: var(--quest-ink);
+  box-shadow: none;
+  font-size: .9rem;
+}
+
+.adventure-dojo .char-select-btn:hover { background: #dcebd6; }
+
+.practice-app {
+  width: min(800px, 100%);
+  padding-top: clamp(18px, 4vw, 42px);
+}
+
+.practice-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 0 16px;
+}
+
+.practice-header h1 { font-size: clamp(1.45rem, 4vw, 2rem); }
+.practice-home,
+.practice-secondary,
+.practice-speak {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid #b6d3c4;
+  border-radius: 11px;
+  background: #f6fcf5;
+  color: var(--quest-green);
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.practice-home:hover,
+.practice-secondary:hover,
+.practice-speak:hover { background: #e2f2e5; }
+
+.practice-view {
+  padding: clamp(17px, 4vw, 34px);
+  border: 1px solid var(--quest-line);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 5px 0 #e4ebe2;
+}
+
+.practice-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--quest-muted);
+  font-size: .93rem;
+  font-weight: 750;
+}
+
+.practice-progress {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 10px;
+  margin: 8px 0 20px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 10px;
+  background: #e7efe6;
+  accent-color: #379374;
+}
+
+.practice-progress::-webkit-progress-bar { background: #e7efe6; }
+.practice-progress::-webkit-progress-value { background: #379374; }
+.practice-progress::-moz-progress-bar { background: #379374; }
+
+.practice-question {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: clamp(16px, 3vw, 25px);
+  border-radius: 15px;
+  background: #e7f3e8;
+  text-align: center;
+}
+
+.practice-instruction { color: var(--quest-muted); font-size: 1rem; font-weight: 700; }
+.practice-prompt {
+  max-width: 100%;
+  font-size: clamp(1.75rem, 6vw, 2.85rem);
+  font-weight: 800;
+  line-height: 1.22;
+  overflow-wrap: anywhere;
+}
+
+.practice-prompt [lang="en"],
+.practice-option:lang(en) { font-family: var(--font-phonics); }
+.practice-prompt-icon { margin-right: .25em; }
+.practice-context { color: var(--quest-muted); font-size: 1rem; }
+.practice-speech-notice { color: var(--quest-muted); font-size: .94rem; }
+.practice-speech-notice:empty { display: none; }
+
+.practice-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(100%, 520px);
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.practice-option {
+  min-width: 0;
+  min-height: 64px;
+  padding: 8px;
+  border: 2px solid #cbdcd1;
+  border-radius: 13px;
+  background: #fff;
+  color: var(--quest-ink);
+  font: 750 clamp(1rem, 4.5vw, 1.55rem)/1.35 var(--font-main);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.practice-option:not(:disabled):hover { border-color: var(--quest-green); background: #eef7ed; }
+.practice-option:disabled { cursor: default; }
+.practice-option.is-wrong { border-color: #b4663c; background: #fff4e8; color: #7a3c22; }
+.practice-option.is-correct { border-color: #358565; background: #def4e4; color: #164c37; }
+
+.practice-feedback {
+  border-radius: 11px;
+  padding: 12px;
+  line-height: 1.55;
+}
+
+.practice-feedback:empty { padding: 0; }
+.practice-feedback.is-wrong { background: #fff3e2; color: #773e20; }
+.practice-feedback.is-correct { background: #e2f4e7; color: #16462f; }
+.practice-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.practice-actions:has(:only-child[hidden]) { margin: 0; }
+
+.practice-primary {
+  min-height: 44px;
+  padding: 9px 18px;
+  border: 1px solid var(--quest-green);
+  border-radius: 11px;
+  background: var(--quest-green);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.practice-primary:hover { background: #125344; }
+.practice-result-title { font-size: clamp(1.45rem, 3.5vw, 2rem); }
+.practice-stars { padding: 7px 0; color: #93621c; font-size: 2.15rem; letter-spacing: .08em; }
+.practice-result-score, .practice-result-best { margin: 6px 0; line-height: 1.55; }
+.practice-review { margin: 16px 0; padding: 13px; border-radius: 12px; background: #f4f7ee; }
+.practice-review h3 { font-size: 1.1rem; }
+.practice-review-list { padding-left: 22px; }
+.practice-review-list li { padding: 7px 0; line-height: 1.55; }
+
+.dojo-instruction { text-align: center; font-weight: 750; line-height: 1.5; }
+.belt-chevron {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+
+@media (max-width: 850px) {
+  .adventure-hero { min-height: 280px; }
+  .hero-line-break { display: none; }
+  .adventure-grid,
+  .adventure-dojo .character-select-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 550px) {
+  .adventure-header { min-height: 62px; }
+  .adventure-brand { font-size: 1.1rem; }
+  .adventure-compass { width: 32px; }
+  .adventure-header .btn-leaderboard { padding: 6px 9px; }
+  .adventure-hero { grid-template-columns: 1fr; border-radius: 20px; }
+  .adventure-hero-copy { gap: 12px; padding: 22px; }
+  .adventure-hero-image { height: clamp(155px, 47vw, 220px); object-position: 64% 50%; }
+  .adventure-grid,
+  .adventure-dojo .character-select-row { gap: 9px; }
+  .quest-card { min-height: 174px; padding: 10px; }
+  .quest-symbol { min-height: 50px; }
+  .quest-title { font-size: 1.1rem; }
+  .quest-description { font-size: .875rem; }
+  .practice-options:has(.practice-option:not(:lang(en))) { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
