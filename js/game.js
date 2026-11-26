@@ -465,7 +465,10 @@ class LandingController {
       }
 
       // 啟動遊戲引擎並傳入玩家姓名
-      window.syllableGame = new SyllableGame(theme, playerName);
+      const nextRound = this.nextDojoRound;
+      this.nextDojoRound = null;
+      document.getElementById('dojo-prepared-notice').textContent = '';
+      window.syllableGame = new SyllableGame(theme, playerName, nextRound);
 
       // 4. 角色英雄空降落地動效 (Hero Landing)
       const mascotContainer = document.getElementById('mascot-container');
@@ -568,12 +571,12 @@ class LandingController {
 /* 核心遊戲引擎 (SyllableGame)                                  */
 /* ============================================================ */
 class SyllableGame {
-  constructor(theme, playerName) {
+  constructor(theme, playerName, nextRound) {
     this.theme = theme || 'dojo';
     this.playerName = playerName || StorageManager.getActivePlayerName();
     this.currentLevelIndex = 0;
     this.currentWordIndex = 0;
-    this.isHintActive = true;
+    this.isHintActive = false;
     this.combo = 0;
     this.hasAnswered = false;
     this.isDestroyed = false;
@@ -593,6 +596,11 @@ class SyllableGame {
     this.beltSelector = document.getElementById('belt-selector-btn');
     this.btnNextWord = document.getElementById('btn-next-word');
     this.btnSpeakWord = document.getElementById('btn-speak-word');
+    this.instruction = document.getElementById('dojo-instruction');
+    this.cutActions = document.getElementById('dojo-cut-actions');
+    this.cutCount = document.getElementById('dojo-cut-count');
+    this.checkCuts = document.getElementById('btn-check-cuts');
+    this.adjustDojo = document.getElementById('btn-adjust-dojo');
 
     // 更新頂部玩家姓名徽章
     this.updatePlayerBadge();
@@ -607,7 +615,8 @@ class SyllableGame {
     this.spawnSakuraPetals();
 
     // 載入第一個關卡
-    this.loadLevel(0);
+    if (nextRound) this.loadPractice(nextRound);
+    else this.loadLevel(0);
     this.focusFirstCut();
   }
 
@@ -624,7 +633,8 @@ class SyllableGame {
   switchPlayer(name) {
     this.playerName = name;
     this.updatePlayerBadge();
-    this.loadLevel(this.currentLevelIndex);
+    if (this.practiceRound) this.loadPractice(this.practiceRound);
+    else this.loadLevel(this.currentLevelIndex);
   }
 
   updatePlayerBadge() {
@@ -642,7 +652,7 @@ class SyllableGame {
   }
 
   getCurrentLevel() {
-    return WORD_LEVELS[this.currentLevelIndex];
+    return this.currentLevel;
   }
 
   getCurrentWord() {
@@ -677,9 +687,11 @@ class SyllableGame {
       window.soundEngine.speakWord(this.getCurrentWord().word);
     };
 
-    this.btnToggleHint.classList.toggle('active', this.isHintActive);
-    this.btnToggleHint.setAttribute('aria-pressed', String(this.isHintActive));
-    this.btnToggleHint.textContent = '💡 提示開啟';
+    this.checkCuts.onclick = () => this.checkPracticeAnswer();
+    this.adjustDojo.onclick = () => {
+      this.setUpgradeDialogOpen(false);
+      window.dojoSettings.open();
+    };
 
     this.btnNextWord.onclick = () => {
       if (this.hasAnswered) this.advanceWord();
@@ -693,7 +705,7 @@ class SyllableGame {
       } else {
         this.levelSelectModal.classList.add('show');
         this.beltSelector.setAttribute('aria-expanded', 'true');
-        this.levelSelectModal.querySelector('.active')?.focus();
+        (this.levelSelectModal.querySelector('.active') || this.levelSelectModal.firstElementChild)?.focus();
       }
     };
 
@@ -717,6 +729,11 @@ class SyllableGame {
     if (btnNextBelt) {
       btnNextBelt.onclick = () => {
         this.setUpgradeDialogOpen(false);
+        if (this.practiceRound) {
+          if (this.practiceRound.settings.source === 'gemini') window.dojoSettings.open();
+          else this.loadPractice(buildDojoRound(this.practiceRound.settings));
+          return;
+        }
         const nextLevel = (this.currentLevelIndex + 1) % WORD_LEVELS.length;
         this.loadLevel(nextLevel);
         this.focusFirstCut();
@@ -779,12 +796,16 @@ class SyllableGame {
   }
 
   toggleHint() {
-    this.isHintActive = !this.isHintActive;
-    this.btnToggleHint.classList.toggle('active', this.isHintActive);
-    this.btnToggleHint.setAttribute('aria-pressed', String(this.isHintActive));
-    this.btnToggleHint.textContent = this.isHintActive ? '💡 提示開啟' : '💡 提示關閉';
+    this.setHints(!this.isHintActive);
     window.soundEngine.playHoverTick();
     this.updateHintVisibility();
+  }
+
+  setHints(active) {
+    this.isHintActive = active;
+    this.btnToggleHint.classList.toggle('active', active);
+    this.btnToggleHint.setAttribute('aria-pressed', String(active));
+    this.btnToggleHint.textContent = active ? '💡 提示開啟' : '💡 提示關閉';
   }
 
   updateHintVisibility() {
@@ -796,11 +817,12 @@ class SyllableGame {
     if (this.hasAnswered) return;
     const word = this.getCurrentWord();
     this.hintBubble.classList.remove('error-hint');
-    if (this.isHintActive) {
-      this.hintBubble.innerHTML = `
-        <div>💡 <strong>提示：</strong>${word.hint}</div>
-        ${word.phonicsNote ? `<div class="phonics-rule-tag">${word.phonicsNote}</div>` : ''}
-      `;
+    if (this.practiceRound) {
+      this.hintBubble.textContent = this.isHintActive
+        ? '先聽整個字，跟著念並拍拍手。紅色是母音字母，拍子的數量要用耳朵聽。'
+        : '先聽發音，想一想這個字有幾拍。';
+    } else if (this.isHintActive) {
+      this.hintBubble.textContent = `💡 ${word.hint || this.currentLevel.ruleDescription}`;
     } else {
       this.hintBubble.textContent = '選一個字母之間的空隙，把單字切成兩個音節。';
     }
@@ -808,9 +830,34 @@ class SyllableGame {
 
   loadLevel(levelIndex) {
     this.currentLevelIndex = levelIndex;
+    this.practiceRound = null;
+    this.currentLevel = { ...WORD_LEVELS[levelIndex], words: makeBeltPool(levelIndex) };
+    this.startCurrentRound();
+  }
+
+  loadPractice(round) {
+    if (!round.words.length) return;
+    this.practiceRound = round;
+    const { topic, count, difficulty } = round.settings;
+    this.currentLevel = {
+      name: '自選練習',
+      title: `${DOJO_TOPICS[topic]} · ${DOJO_COUNTS[count]} · ${DOJO_DIFFICULTIES[difficulty]}`,
+      badge: '自選練習',
+      beltColor: '#f6d878',
+      beltBorder: '#ae7730',
+      words: round.words
+    };
+    this.setHints(difficulty === 'easy');
+    this.startCurrentRound();
+    this.focusFirstCut();
+  }
+
+  startCurrentRound() {
     this.currentWordIndex = 0;
     this.combo = 0;
+    this.practiceFirstTry = 0;
     this.comboTextEl.textContent = '連擊 x0';
+    this.setHints(this.isHintActive);
     const level = this.getCurrentLevel();
 
     this.beltNameEl.textContent = level.name;
@@ -820,6 +867,7 @@ class SyllableGame {
 
     this.renderLevelMenu();
     this.loadWord();
+    rememberDojoWords(level.words);
   }
 
   renderLevelMenu() {
@@ -827,8 +875,9 @@ class SyllableGame {
     WORD_LEVELS.forEach((lvl, idx) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = `level-option-btn ${idx === this.currentLevelIndex ? 'active' : ''}`;
-      if (idx === this.currentLevelIndex) btn.setAttribute('aria-current', 'true');
+      const active = !this.practiceRound && idx === this.currentLevelIndex;
+      btn.className = `level-option-btn ${active ? 'active' : ''}`;
+      if (active) btn.setAttribute('aria-current', 'true');
       btn.innerHTML = `
         <span class="belt-indicator" style="background:${lvl.beltColor}; border-color:${lvl.beltBorder}"></span>
         <span>${lvl.badge} - ${lvl.name}</span>
@@ -845,13 +894,15 @@ class SyllableGame {
 
   loadWord() {
     this.hasAnswered = false;
+    this.hadWrongAttempt = false;
+    this.selectedCuts = new Set();
     window.soundEngine.cancelSpeech();
     this.clearPronunciationHighlight();
     clearTimeout(this.shakeTimer);
     const level = this.getCurrentLevel();
     const wordObj = this.getCurrentWord();
 
-    this.ruleTitleEl.textContent = `${level.badge}：${level.title}`;
+    this.ruleTitleEl.textContent = `${level.badge} · ${level.title}`;
     this.ruleProgressEl.textContent = `第 ${this.currentWordIndex + 1} / ${level.words.length} 題`;
     this.meaningText.textContent = wordObj.meaning;
 
@@ -860,6 +911,11 @@ class SyllableGame {
     this.boardContainer.setAttribute('role', 'group');
     this.boardContainer.setAttribute('aria-label', `切開英文單字 ${wordObj.word}`);
     this.btnNextWord.hidden = true;
+    this.cutActions.hidden = !this.practiceRound;
+    this.instruction.textContent = this.practiceRound
+      ? '選出所有切點再檢查。點同一處可取消，長單字可以左右滑。'
+      : '選擇兩個字母中間的切點，把單字分成兩段。';
+    this.updateCutControls();
 
     const ropeLeft = document.createElement('div');
     ropeLeft.className = 'hanging-rope left';
@@ -876,6 +932,15 @@ class SyllableGame {
     const woodenBoard = document.createElement('div');
     woodenBoard.className = 'wooden-board';
 
+    if (this.practiceRound) {
+      this.boardContainer.classList.add('free-cuts');
+      this.renderPracticeTiles(woodenBoard, wordObj);
+      this.boardContainer.appendChild(woodenBoard);
+      this.updateHintVisibility();
+      this.updatePronunciationControls();
+      return;
+    }
+
     // 左半部
     const leftWrapper = document.createElement('div');
     leftWrapper.className = 'board-piece-wrapper left-piece-wrapper';
@@ -885,7 +950,7 @@ class SyllableGame {
     leftPiece.id = 'piece-left';
 
     leftWrapper.appendChild(leftPiece);
-    leftWrapper.appendChild(this.makeSyllableButton(wordObj, 0, leftPiece));
+    if (wordObj.speechSyllables) leftWrapper.appendChild(this.makeSyllableButton(wordObj, 0, leftPiece));
 
     // 右半部
     const rightWrapper = document.createElement('div');
@@ -896,20 +961,13 @@ class SyllableGame {
     rightPiece.id = 'piece-right';
 
     rightWrapper.appendChild(rightPiece);
-    rightWrapper.appendChild(this.makeSyllableButton(wordObj, 1, rightPiece));
+    if (wordObj.speechSyllables) rightWrapper.appendChild(this.makeSyllableButton(wordObj, 1, rightPiece));
 
     const chars = wordObj.word.split('');
     const splitIndex = wordObj.splitIndex;
 
     chars.forEach((char, idx) => {
-      const letterBox = document.createElement('div');
-      letterBox.className = `letter-box ${isVowel(char, idx) ? 'is-vowel' : 'is-consonant'}`;
-      letterBox.setAttribute('aria-hidden', 'true');
-      if (this.isHintActive) letterBox.classList.add('hint-active');
-      letterBox.innerHTML = `
-        <div class="vowel-gem"></div>
-        <span>${char}</span>
-      `;
+      const letterBox = this.makeLetter(char, idx);
 
       if (idx < splitIndex) {
         leftPiece.appendChild(letterBox);
@@ -918,22 +976,7 @@ class SyllableGame {
       }
 
       if (idx < chars.length - 1) {
-        const chopSlot = document.createElement('button');
-        chopSlot.type = 'button';
-        chopSlot.className = 'chop-slot';
-        chopSlot.setAttribute('aria-label', `${char} 和 ${chars[idx + 1]} 中間，第 ${idx + 1} 個空隙`);
-        chopSlot.dataset.splitIndex = (idx + 1).toString();
-        chopSlot.innerHTML = '<span class="chop-line" aria-hidden="true"></span>';
-
-        chopSlot.addEventListener('mouseenter', () => {
-          if (!this.hasAnswered) {
-            window.soundEngine.playHoverTick();
-          }
-        });
-
-        chopSlot.addEventListener('click', () => {
-          this.handleChop(idx + 1);
-        });
+        const chopSlot = this.makeCutSlot(chars, idx);
 
         if (idx < splitIndex) {
           leftPiece.appendChild(chopSlot);
@@ -949,6 +992,91 @@ class SyllableGame {
 
     this.updateHintVisibility();
     this.updatePronunciationControls();
+  }
+
+  makeLetter(char, index) {
+    const tile = document.createElement('div');
+    tile.className = `letter-box ${isVowel(char, index) ? 'is-vowel' : 'is-consonant'}`;
+    tile.setAttribute('aria-hidden', 'true');
+    tile.classList.toggle('hint-active', this.isHintActive);
+    const gem = document.createElement('div');
+    gem.className = 'vowel-gem';
+    const text = document.createElement('span');
+    text.textContent = char;
+    tile.append(gem, text);
+    return tile;
+  }
+
+  makeCutSlot(chars, index) {
+    const button = document.createElement('button');
+    const cut = index + 1;
+    button.type = 'button';
+    button.className = 'chop-slot';
+    button.setAttribute('aria-label', `${chars[index]} 和 ${chars[cut]} 中間，第 ${cut} 個空隙`);
+    button.dataset.splitIndex = cut.toString();
+    button.innerHTML = '<span class="chop-line" aria-hidden="true"></span>';
+    if (this.practiceRound) button.setAttribute('aria-pressed', 'false');
+    button.addEventListener('mouseenter', () => {
+      if (!this.hasAnswered) window.soundEngine.playHoverTick();
+    });
+    button.addEventListener('click', () => {
+      if (this.practiceRound) this.toggleCut(cut, button);
+      else this.handleChop(cut);
+    });
+    return button;
+  }
+
+  renderPracticeTiles(board, word) {
+    const row = document.createElement('div');
+    if (this.hasAnswered) {
+      row.className = 'board-piece solved-segments';
+      row.setAttribute('aria-hidden', 'true');
+      for (const syllable of word.syllables) {
+        const tag = document.createElement('span');
+        tag.className = 'dojo-solved-syllable';
+        tag.lang = 'en';
+        tag.textContent = syllable;
+        row.append(tag);
+      }
+    } else {
+      row.className = 'board-piece selectable-cuts';
+      const chars = [...word.word];
+      chars.forEach((char, index) => {
+        row.append(this.makeLetter(char, index));
+        if (index + 1 < chars.length) row.append(this.makeCutSlot(chars, index));
+      });
+    }
+    board.replaceChildren(row);
+  }
+
+  toggleCut(cut, button) {
+    if (this.hasAnswered || this.isDestroyed) return;
+    if (this.selectedCuts.has(cut)) {
+      this.selectedCuts.delete(cut);
+    } else {
+      if (this.selectedCuts.size === 3) {
+        this.hintBubble.textContent = '這個練習最多分成 4 個音節。可以先取消一個切點再選。';
+        return;
+      }
+      this.selectedCuts.add(cut);
+    }
+    button.setAttribute('aria-pressed', String(this.selectedCuts.has(cut)));
+    this.updateCutControls();
+  }
+
+  updateCutControls() {
+    const count = this.selectedCuts.size;
+    this.cutCount.textContent = count ? `選了 ${count} 個切點` : '尚未選切點';
+    this.checkCuts.textContent = count ? '檢查答案' : '整個字是 1 音節';
+  }
+
+  checkPracticeAnswer() {
+    if (!this.practiceRound || this.hasAnswered || this.isDestroyed) return;
+    const word = this.getCurrentWord();
+    let position = 0;
+    const expected = word.syllables.slice(0, -1).map(part => position += part.length);
+    this.gradeAnswer(expected.length === this.selectedCuts.size &&
+      expected.every(cut => this.selectedCuts.has(cut)));
   }
 
   makeSyllableButton(word, index, piece) {
@@ -971,7 +1099,7 @@ class SyllableGame {
   }
 
   focusFirstCut() {
-    this.boardContainer.querySelector('.chop-slot')?.focus();
+    (this.boardContainer.querySelector('.chop-slot') || this.checkCuts).focus();
   }
 
   clearPronunciationHighlight() {
@@ -996,9 +1124,11 @@ class SyllableGame {
 
   handleChop(cutIndex) {
     if (this.hasAnswered || this.isDestroyed) return;
+    this.gradeAnswer(cutIndex === this.getCurrentWord().splitIndex);
+  }
 
+  gradeAnswer(isCorrect) {
     const wordObj = this.getCurrentWord();
-    const isCorrect = (cutIndex === wordObj.splitIndex);
 
     if (isCorrect) {
       this.hasAnswered = true;
@@ -1006,7 +1136,11 @@ class SyllableGame {
       this.comboTextEl.textContent = `連擊 x${this.combo}`;
 
       // 儲存記錄：紀錄成功解出單字與當前連擊
-      StorageManager.recordWordSolved(this.playerName, wordObj.word, this.combo, this.theme);
+      if (this.practiceRound) {
+        if (!this.hadWrongAttempt) this.practiceFirstTry++;
+      } else {
+        StorageManager.recordWordSolved(this.playerName, wordObj.word, this.combo, this.theme);
+      }
 
       window.soundEngine.playChopWhoosh();
 
@@ -1020,20 +1154,35 @@ class SyllableGame {
       });
 
       this.boardContainer.classList.add('split');
-      this.boardContainer.querySelectorAll('.chop-slot').forEach(button => {
-        button.hidden = true;
-      });
+      if (this.practiceRound) {
+        this.cutActions.hidden = true;
+        this.renderPracticeTiles(this.boardContainer.querySelector('.wooden-board'), wordObj);
+      } else {
+        this.boardContainer.querySelectorAll('.chop-slot').forEach(button => {
+          button.hidden = true;
+        });
+      }
       this.updatePronunciationControls();
       this.hintBubble.classList.remove('error-hint');
-      this.hintBubble.innerHTML = `
-        <div>✨ <strong>答對了！</strong> <span lang="en">${wordObj.syllables.join(' + ')} = ${wordObj.word}</span></div>
-        ${wordObj.phonicsNote ? `<div class="phonics-rule-tag">${wordObj.phonicsNote}</div>` : ''}
-      `;
+      const answer = document.createElement('span');
+      answer.lang = 'en';
+      answer.textContent = wordObj.syllables.join(' · ');
+      this.hintBubble.replaceChildren(`答對了！這個字有 ${wordObj.syllables.length} 個音節。 `, answer);
+      if (wordObj.phonicsNote) {
+        const note = document.createElement('div');
+        note.className = 'phonics-rule-tag';
+        note.textContent = wordObj.phonicsNote;
+        this.hintBubble.append(note);
+      }
       const isFinalWord = this.currentWordIndex === this.getCurrentLevel().words.length - 1;
       this.btnNextWord.textContent = isFinalWord ? '查看過關結果' : '下一題';
       this.btnNextWord.hidden = false;
       this.btnNextWord.focus();
 
+      if (this.practiceRound || !wordObj.speechSyllables) {
+        window.soundEngine.speakWord(wordObj.word);
+        return;
+      }
       const leftPiece = this.boardContainer.querySelector('.left-piece');
       const rightPiece = this.boardContainer.querySelector('.right-piece');
       window.soundEngine.speakPhonicsSequence(
@@ -1051,6 +1200,7 @@ class SyllableGame {
       );
 
     } else {
+      this.hadWrongAttempt = true;
       this.combo = 0;
       this.comboTextEl.textContent = `連擊 x0`;
 
@@ -1066,9 +1216,15 @@ class SyllableGame {
       }, 450);
 
       this.hintBubble.classList.add('error-hint');
-      this.hintBubble.textContent = this.isHintActive
-        ? `再試一次！${wordObj.hint}`
-        : '再試一次！選另一個字母空隙，也可以打開提示。';
+      if (this.practiceRound) {
+        this.hintBubble.textContent = this.isHintActive
+          ? '再試一次。跟著發音拍手，每一拍是一個音節，再把聽到的分段標出來。'
+          : '再試一次。可以聽發音，或選同一處取消切點。';
+      } else {
+        this.hintBubble.textContent = this.isHintActive
+          ? `再試一次！${wordObj.hint || this.currentLevel.ruleDescription}`
+          : '再試一次！選另一個字母空隙，也可以打開提示。';
+      }
     }
   }
 
@@ -1088,6 +1244,20 @@ class SyllableGame {
 
   showLevelUpModal() {
     if (this.isDestroyed) return;
+    if (this.practiceRound) {
+      window.soundEngine.playFanfare();
+      this.mascot.triggerWin();
+      document.getElementById('upgrade-modal-title').textContent = '音節練習完成！';
+      document.getElementById('upgrade-modal-desc').textContent =
+        `完成 ${this.practiceRound.words.length} 題，其中 ${this.practiceFirstTry} 題一次答對。`;
+      const next = document.getElementById('btn-next-belt');
+      next.textContent = this.practiceRound.settings.source === 'gemini' ? '準備新題目' : '再抽一組';
+      this.adjustDojo.hidden = false;
+      this.setUpgradeDialogOpen(true);
+      next.focus();
+      return;
+    }
+    this.adjustDojo.hidden = true;
     const currentLevel = this.getCurrentLevel();
     const nextLevelIdx = (this.currentLevelIndex + 1) % WORD_LEVELS.length;
     const nextLevel = WORD_LEVELS[nextLevelIdx];

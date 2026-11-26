@@ -70,6 +70,10 @@
         <div>
           <h2 id="dojo-characters-title">音節道館夥伴</h2>
           <p class="adventure-section-note">選一位夥伴練習拆音節，挑戰五條腰帶。</p>
+          <div class="dojo-settings-entry">
+            <button type="button" class="practice-home" id="btn-dojo-settings-home" data-open-dojo-settings>音節出題設定</button>
+            <p id="dojo-prepared-notice" role="status"></p>
+          </div>
         </div>
       <div class="player-name-bar">
         <span class="player-icon-badge" aria-hidden="true">👤</span>
@@ -182,6 +186,7 @@
         </button>
 
         <!-- 查看排行榜按鈕 -->
+        <button type="button" class="btn-icon-circle" data-open-dojo-settings aria-label="音節出題設定" title="音節出題設定">⚙️</button>
         <button class="btn-icon-circle" id="btn-game-leaderboard" title="查看道場榮譽排行榜">🏆</button>
 
         <!-- 靜音開關 -->
@@ -203,7 +208,11 @@
       <!-- 上半部：修煉木板懸掛區 -->
       <div class="target-area">
         <div class="board-container" id="board-container"></div>
-        <p class="dojo-instruction">選擇兩個字母中間的切點，把單字分成兩段。</p>
+        <p class="dojo-instruction" id="dojo-instruction">選擇兩個字母中間的切點，把單字分成兩段。</p>
+        <div id="dojo-cut-actions" class="dojo-cut-actions" hidden>
+          <span id="dojo-cut-count" role="status">選了 0 個切點</span>
+          <button type="button" class="btn-primary-large" id="btn-check-cuts">整個字是 1 音節</button>
+        </div>
         <div class="hint-bubble" id="hint-bubble" aria-live="polite" aria-atomic="true">
           <span>💡 提示：兩個完整單字合在一起，從它們相接處切開！</span>
         </div>
@@ -234,6 +243,7 @@
           你已經完全掌握了此道館的音節奧義！
         </p>
         <button class="btn-primary-large" id="btn-next-belt">挑戰下一條腰帶</button>
+        <button type="button" class="practice-home" id="btn-adjust-dojo" hidden>修改出題設定</button>
       </div>
     </div>
 
@@ -279,12 +289,65 @@
     </div>
   </div>
 
+  <dialog id="dojo-settings" class="dojo-settings" aria-labelledby="dojo-settings-title">
+    <form id="dojo-settings-form" class="dojo-settings-form">
+      <header class="dojo-settings-heading">
+        <h2 id="dojo-settings-title">音節出題設定</h2>
+        <button type="button" class="practice-home" id="btn-close-dojo-settings">關閉</button>
+      </header>
+      <div class="dojo-settings-fields">
+        <label>出題範圍 <select name="topic"></select></label>
+        <label>音節數 <select name="count"></select></label>
+        <label>難度 <select name="difficulty"></select></label>
+        <label>回合題數
+          <select name="size">
+            <option value="6">6 題</option>
+            <option value="8">8 題</option>
+            <option value="10">10 題</option>
+          </select>
+        </label>
+        <label class="dojo-source-field">題目來源
+          <select name="source">
+            <option value="builtin">內建題庫</option>
+            <option value="gemini">Gemini 題庫</option>
+          </select>
+        </label>
+      </div>
+      <fieldset id="dojo-gemini-options" class="dojo-gemini-options" hidden>
+        <legend>Gemini API 金鑰</legend>
+        <label for="dojo-gemini-key">輸入自己的金鑰</label>
+        <input type="password" id="dojo-gemini-key" maxlength="160" autocomplete="off" spellcheck="false" autocapitalize="off">
+        <div class="dojo-settings-buttons">
+          <button type="button" class="practice-home" id="btn-save-dojo-key">儲存於此瀏覽器</button>
+          <button type="button" class="practice-home" id="btn-clear-dojo-key">清除金鑰</button>
+        </div>
+        <p id="dojo-key-status" role="status"></p>
+        <p class="dojo-settings-note">適合家長或老師操作。金鑰和已審閱題目存於此瀏覽器，產題請求直接送給 Google。</p>
+      </fieldset>
+      <p id="dojo-settings-status" class="dojo-settings-status" role="status"></p>
+      <section id="dojo-review" class="dojo-review" aria-labelledby="dojo-review-title" hidden>
+        <h3 id="dojo-review-title">審閱新題目</h3>
+        <p>檢查字義和拆法，取消勾選想略過的題目。</p>
+        <div id="dojo-review-list" class="dojo-review-list"></div>
+        <button type="button" class="practice-primary" id="btn-use-dojo-review">保存並使用勾選的題目</button>
+      </section>
+      <div class="dojo-settings-buttons">
+        <button type="submit" class="practice-primary" id="btn-prepare-dojo">抽題開始</button>
+        <button type="button" class="practice-home" id="btn-use-dojo-saved" hidden>用已審閱題庫抽題</button>
+        <button type="button" class="practice-home" id="btn-return-dojo-belts" hidden>回到腰帶闖關</button>
+      </div>
+    </form>
+  </dialog>
+
   <!-- 載入模組化腳本 (依序載入詞庫、音效、儲存、角色、核心遊戲) -->
   <script src="js/words.js"></script>
+  <script src="js/dojo-bank.js"></script>
+  <script src="js/dojo-rounds.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/character.js"></script>
   <script src="js/game.js"></script>
+  <script src="js/dojo-settings.js"></script>
   <script src="js/practice-questions.js"></script>
   <script src="js/practice.js"></script>
 </body>
