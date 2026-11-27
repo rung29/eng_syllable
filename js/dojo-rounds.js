@@ -17,7 +17,7 @@ const DOJO_WORD_PATTERN = /^[a-z]{2,16}$/;
 const DOJO_BELT_EXTRA_ROWS = [
   `rain.coat|雨衣
 sea.shell|貝殼
-fire.fly|螢火蟲
+sun.set|日落
 snow.ball|雪球
 book.shelf|書架
 tea.pot|茶壺
@@ -25,7 +25,7 @@ door.bell|門鈴
 bed.room|臥室
 day.dream|白日夢
 moon.light|月光
-lady.bug|瓢蟲
+rain.drop|雨滴
 drum.stick|鼓棒
 note.book|筆記本`,
   `but.ter|奶油
@@ -50,7 +50,7 @@ win.ter|冬天
 pub.lic|公共的
 sub.ject|科目
 sen.tence|句子
-arch.er|弓箭手
+ar.cher|弓箭手
 pan.try|食品儲藏室
 cus.tard|卡士達
 cur.tain|窗簾`,
@@ -87,6 +87,19 @@ function dojoRows(rows, topic, difficulty) {
 const DOJO_BUILTIN_WORDS = Object.entries(DOJO_WORD_ROWS).flatMap(([topic, blocks]) =>
   blocks.flatMap(([difficulty, rows]) => dojoRows(rows, topic, difficulty))
 );
+
+const DOJO_GEMINI_CANDIDATES = [
+  ...DOJO_BUILTIN_WORDS,
+  ...Object.entries(DOJO_GEMINI_WORD_ROWS).flatMap(([topic, blocks]) =>
+    blocks.flatMap(([difficulty, rows]) => dojoRows(rows.replaceAll(' ', '\n'), topic, difficulty))
+  )
+];
+
+const DOJO_LOCAL_SYLLABLES = new Map([
+  ...WORD_LEVELS.flatMap(level => level.words),
+  ...DOJO_BELT_EXTRA_ROWS.flatMap(rows => dojoRows(rows)),
+  ...DOJO_GEMINI_CANDIDATES
+].map(({ word, syllables }) => [word, syllables]));
 
 function makeBeltPool(levelIndex) {
   const level = WORD_LEVELS[levelIndex];
@@ -177,15 +190,15 @@ function normalizeGeminiWords(items, settings = DOJO_DEFAULT_SETTINGS) {
   for (const item of items) {
     if (!item || typeof item.word !== 'string' || !DOJO_WORD_PATTERN.test(item.word)) continue;
     const { word, syllables, topic, difficulty } = item;
-    if (!Array.isArray(syllables) || syllables.length < 1 || syllables.length > 4 ||
-        syllables.some(part => typeof part !== 'string' || !/^[a-z]+$/.test(part)) ||
-        syllables.join('') !== word || words.has(word)) continue;
+    const expected = DOJO_LOCAL_SYLLABLES.get(word);
+    if (!expected || !Array.isArray(syllables) || syllables.length !== expected.length ||
+        expected.some((part, index) => syllables[index] !== part) || words.has(word)) continue;
     if (!Object.hasOwn(DOJO_TOPICS, topic) || topic === 'all' ||
         !Object.hasOwn(DOJO_DIFFICULTIES, difficulty) || difficulty === 'all') continue;
     const meaning = typeof item.meaning === 'string' ? item.meaning.trim() : '';
     if (!meaning || meaning.length > 28 || !/^[\p{Script=Han}A-Za-z0-9（）()／、· \-]+$/u.test(meaning) ||
         !/\p{Script=Han}/u.test(meaning)) continue;
-    const entry = { word, syllables, meaning, topic, difficulty };
+    const entry = { word, syllables: [...expected], meaning, topic, difficulty };
     const speech = item.speechSyllables;
     if (Array.isArray(speech) && speech.length === syllables.length &&
         speech.every(part => typeof part === 'string' && /^[a-z]{1,20}$/i.test(part))) {
@@ -206,7 +219,9 @@ function saveReviewedDojoWords(items) {
 }
 
 function buildDojoRound(settings, words) {
-  const pool = words ?? (settings.source === 'gemini' ? reviewedDojoWords() : DOJO_BUILTIN_WORDS);
+  const pool = settings.source === 'gemini'
+    ? (words === undefined ? reviewedDojoWords() : normalizeGeminiWords(words))
+    : (words ?? DOJO_BUILTIN_WORDS);
   const matches = matchingDojoWords(pool, settings);
   return {
     settings,

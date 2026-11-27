@@ -11,18 +11,28 @@ function dojoStoredSettings() {
 }
 
 async function requestGeminiDojoWords(settings, exclude, key, signal) {
+  const banned = new Set(exclude);
+  const available = matchingDojoWords(DOJO_GEMINI_CANDIDATES, settings)
+    .filter(item => !banned.has(item.word));
+  const candidates = sampleDojoWords(available, settings.size * 4, [], settings.count === 'all');
+  if (!candidates.length) {
+    throw new Error('本機字典目前沒有符合設定的新題。可放寬條件，或使用已審閱題庫。');
+  }
+
   const topicChoices = Object.keys(DOJO_TOPICS).filter(topic => topic !== 'all');
   const difficultyChoices = Object.keys(DOJO_DIFFICULTIES).filter(level => level !== 'all');
   const prompt = [
     'Create a vocabulary practice word list for elementary school children in Taiwan learning US English.',
     'Return real single lowercase words (2–16 ASCII letters), with short accurate Traditional Chinese meanings.',
-    'Use one standard American instructional spelling-based syllable division. Every group must be a consecutive nonempty substring and the groups must rejoin to exactly the original word.',
+    'Choose from the provided local vocabulary. Copy the dot-separated spelling groups exactly as an array and keep the associated topic and difficulty.',
     'For speechSyllables, give one short Latin-letter sound-alike spelling per group for US English text-to-speech in isolation. Use no spaces, punctuation, or IPA. Example: for the written groups ti and ger in tiger, use tie and gurr.',
     'The number of groups must match the spoken syllable count. Avoid ambiguous or dialect-dependent counts, names, abbreviations, hyphens, and adult or unsafe words.',
     'Generate different initial letters, lengths, and cut positions. easy means common words for beginners, medium means familiar words with more difficult spelling, hard means less common or structurally harder age-appropriate words.',
     `Topics: ${topicChoices.map(topic => topic + '=' + DOJO_TOPICS[topic]).join(', ')}.`,
     `Topic: ${settings.topic}. Difficulty: ${settings.difficulty}. Syllables: ${settings.count === 'all' ? 'mix 1–4 counts' : settings.count}.`,
-    `Return up to ${settings.size} unique entries. Return fewer when needed for accuracy. Avoid these recently shown words: ${exclude.join(', ')}.`
+    `Return up to ${settings.size} unique entries. Return fewer when needed for accuracy.`,
+    'Local vocabulary (spelling groups | topic | difficulty):',
+    ...candidates.map(item => `${item.syllables.join('.')} | ${item.topic} | ${item.difficulty}`)
   ].join('\n');
 
   const response = await fetch(DOJO_GEMINI_URL, {
@@ -84,7 +94,6 @@ async function requestGeminiDojoWords(settings, exclude, key, signal) {
   } catch {
     throw new Error('Gemini 沒有回傳完整題目。請再試一次，或改用內建題庫。');
   }
-  const banned = new Set(exclude);
   return normalizeGeminiWords(parsed?.words, settings).filter(item => !banned.has(item.word)).slice(0, settings.size);
 }
 
@@ -250,7 +259,7 @@ class DojoSettingsController {
       const words = await requestGeminiDojoWords(settings, excluded, key, controller.signal);
       if (this.request !== controller) return;
       if (words.length === 0) {
-        this.status.textContent = '這次沒有符合條件的新題目。可再產生一次或調整條件。';
+        this.status.textContent = '這次沒有通過本機字典校驗的新題目。可再產生一次或調整條件。';
         return;
       }
       this.previewExclusions = [...words.map(item => item.word), ...this.previewExclusions].slice(0, 45);
@@ -288,7 +297,7 @@ class DojoSettingsController {
     });
     this.reviewList.replaceChildren(...checkboxes);
     this.review.hidden = false;
-    this.status.textContent = `這次產生 ${words.length} 題可審閱的單字。`;
+    this.status.textContent = `這次有 ${words.length} 題通過本機字典校驗，請確認字義。`;
     this.reviewList.querySelector('input')?.focus();
   }
 

@@ -15,6 +15,7 @@ ti.ger|老虎
 spi.der|蜘蛛
 kit.ten|小貓
 pup.py|小狗
+la.dy.bug|瓢蟲
 but.ter.fly|蝴蝶
 kan.ga.roo|袋鼠
 el.e.phant|大象
@@ -30,7 +31,7 @@ pen.guin|企鵝
 ham.ster|倉鼠
 mon.key|猴子
 ea.gle|老鷹
-oct.o.pus|章魚
+oc.to.pus|章魚
 jel.ly.fish|水母
 mos.qui.to|蚊子
 ar.ma.dil.lo|犰狳
@@ -47,7 +48,7 @@ man.a.tee|海牛
 pel.i.can|鵜鶘
 por.cu.pine|豪豬
 sal.a.man.der|蠑螈
-or.ang.u.tan|紅毛猩猩`]
+o.rang.u.tan|紅毛猩猩`]
   ],
   food: [
     ['easy', `rice|米飯
@@ -91,7 +92,7 @@ mus.tard|芥末醬
 vin.e.gar|醋
 cel.er.y|芹菜
 spa.ghet.ti|義大利麵
-or.e.ga.no|奧勒岡
+o.reg.a.no|奧勒岡
 pis.ta.chi.o|開心果`]
   ],
   school: [
@@ -133,9 +134,9 @@ sen.tence|句子
 frac.tion|分數
 gram.mar|文法
 par.a.graph|段落
-syll.a.ble|音節
-il.lus.tra.tion|插圖
-de.fin.i.tion|定義
+syl.la.ble|音節
+il.lu.stra.tion|插圖
+def.i.ni.tion|定義
 cal.cu.la.tor|計算機`]
   ],
   daily: [
@@ -205,7 +206,7 @@ val.ley|山谷
 hur.ri.cane|颶風
 tor.na.do|龍捲風
 at.mo.sphere|大氣
-daff.o.dil|黃水仙
+daf.fo.dil|黃水仙
 veg.e.ta.tion|植被`],
     ['hard', `cliff|懸崖
 branch|樹枝
@@ -216,7 +217,7 @@ wet.land|濕地
 land.slide|山崩
 fos.sil|化石
 av.a.lanche|雪崩
-pen.in.su.la|半島
+pe.nin.su.la|半島
 con.ser.va.tion|保育
 con.den.sa.tion|凝結`]
   ],
@@ -253,13 +254,47 @@ cham.pi.on.ship|錦標賽`],
 ski|滑雪
 row|划船
 fence|擊劍
-arch.er.y|射箭
-moun.tain.eer.ing|登山運動
+ar.cher.y|射箭
+moun.tai.neer.ing|登山運動
 pil.a.tes|皮拉提斯
-bi.cy.cling|騎自行車
-jug.gling|雜耍
+snow.board.ing|單板滑雪
+gym.nast|體操選手
 mar.a.thon|馬拉松
-tourn.a.ment|錦標賽
+tour.na.ment|錦標賽
 ac.ro.bat.ics|特技表演`]
+  ]
+};
+
+// Additional dictionary words Gemini can use. Dots mark the teaching cuts.
+const DOJO_GEMINI_WORD_ROWS = {
+  animals: [
+    ['easy', 'goat cow horse mouse goose hen pig shark worm don.key tur.key'],
+    ['medium', 'ze.bra cam.el lla.ma ot.ter bad.ger ro.bin par.rot pea.cock gold.fish star.fish grass.hop.per hum.ming.bird drag.on.fly croc.o.dile'],
+    ['hard', 'rac.coon wal.rus chip.munk king.fish.er an.gel.fish an.te.lope sword.fish sea.horse al.ba.tross pol.li.na.tor']
+  ],
+  food: [
+    ['easy', 'beans corn jam lime salt toast peas mint pie snack chip dum.pling oat.meal corn.bread'],
+    ['medium', 'pea.nut wal.nut al.mond co.co.nut cin.na.mon wa.ter.cress ba.gel waf.fle flat.bread oat.cake blue.ber.ry straw.ber.ry black.ber.ry'],
+    ['hard', 'mar.ma.lade ta.hi.ni as.par.a.gus pom.e.gran.ate ar.ti.choke va.nil.la buck.wheat saf.fron']
+  ],
+  school: [
+    ['easy', 'bag page test tape bin class.room book.mark read.ing writ.ing ad.di.tion ru.ler'],
+    ['medium', 'note.pad flash.card text.book work.sheet home.room ab.a.cus as.sign.ment com.po.si.tion'],
+    ['hard', 'quo.tient in.te.ger dec.i.mal long.hand sub.trac.tion con.junc.tion mul.ti.ple punc.tu.a.tion sta.tis.tics']
+  ],
+  daily: [
+    ['easy', 'bath coat cup key pan rug soap tooth.brush tooth.paste bath.room hall.way'],
+    ['medium', 'door.mat wash.cloth dish.wash.er cook.ware dress.er a.larm dust.pan work.bench'],
+    ['hard', 'ther.mom.e.ter san.i.tiz.er a.lu.mi.num tool.box pad.lock wa.ter.proof']
+  ],
+  nature: [
+    ['easy', 'dark dusk night sky wind dawn hill beach lake rock sand thun.der snow.flake sun.beam'],
+    ['medium', 'driz.zle hail.stone thun.der.storm wa.ter.shed earth.quake gla.cier so.lar rain.for.est'],
+    ['hard', 'pol.li.na.tion e.ro.sion ec.o.sys.tem hi.ber.na.tion vol.can.ic sed.i.ment mud.flats']
+  ],
+  activities: [
+    ['easy', 'kick hop walk clap catch throw flip skate slide swing jog sport skip.ping hop.ping row.ing play.ground'],
+    ['medium', 'score.board team.work rac.quet re.lay som.er.sault dodge.ball kick.box.ing coach.ing'],
+    ['hard', 'tri.ath.lon bi.ath.lon gym.nas.tic com.pet.i.tive ath.let.ic kay.ak.ing']
   ]
 };
