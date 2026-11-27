@@ -1149,6 +1149,10 @@ class SyllableGame {
     }
 
     this.wrongAttempts++;
+    if (this.wrongAttempts === 1) {
+      const word = this.getCurrentWord();
+      observeDailyPractice(this.playerName, `syllable-${word.syllables.length}`, word.word, true);
+    }
     this.combo = 0;
     this.comboTextEl.textContent = '連擊 x0';
 
@@ -1187,6 +1191,9 @@ class SyllableGame {
     } else {
       this.combo++;
       this.comboTextEl.textContent = `連擊 x${this.combo}`;
+      if (!this.wrongAttempts) {
+        observeDailyPractice(this.playerName, `syllable-${word.syllables.length}`, word.word, false);
+      }
       if (this.practiceRound) {
         if (!this.wrongAttempts) this.practiceFirstTry++;
       } else {

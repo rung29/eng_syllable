@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/adventure.css">
   <link rel="stylesheet" href="css/shop.css">
+  <link rel="stylesheet" href="css/daily.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧭</text></svg>">
 </head>
 <body>
@@ -21,26 +22,43 @@
         <span class="adventure-compass" aria-hidden="true"></span>
         <span>English Quest</span>
       </div>
-      <button type="button" class="btn-leaderboard" id="btn-landing-leaderboard">
-        <span aria-hidden="true">🏆</span> 道館排行榜
-      </button>
+      <div class="adventure-header-tools">
+        <div class="player-name-bar">
+          <label for="player-select-dropdown" id="player-bar-label">小勇士</label>
+          <select id="player-select-dropdown" class="player-select-dropdown" title="切換或新增小勇士"></select>
+          <div id="new-player-input-wrap" class="new-player-input-wrap" style="display: none;">
+            <input type="text" id="player-name-input" class="player-name-input" aria-label="新小勇士暱稱" placeholder="輸入暱稱" autocomplete="off" maxlength="10">
+            <button type="button" id="btn-confirm-new-player" class="btn-player-action btn-confirm" title="確定新增">✔</button>
+            <button type="button" id="btn-cancel-new-player" class="btn-player-action btn-cancel" title="取消">✖</button>
+          </div>
+        </div>
+        <button type="button" class="btn-leaderboard" id="btn-landing-leaderboard">
+          <span aria-hidden="true">🏆</span> 道館排行榜
+        </button>
+      </div>
     </header>
 
     <section class="adventure-hero" aria-labelledby="home-title">
       <div class="adventure-hero-copy">
         <h1 id="home-title">英語冒險島</h1>
-        <p>到森林商店幫咪喵準備野餐。<br class="hero-line-break">聽英文、找食材，再拼出一句話。約 5 分鐘。</p>
-        <div class="shop-hero-actions">
-          <button type="button" class="adventure-start" id="btn-start-shop">開始森林商店任務</button>
-          <a class="shop-level-link" href="#adventure-modes">其他練習</a>
+        <p>選一個任務，照自己的步調練英文。</p>
+        <div class="home-feature-actions">
+          <button type="button" class="home-feature home-feature-daily" id="btn-start-daily" data-practice-mode="daily">
+            <span class="home-feature-icon" aria-hidden="true">📅</span>
+            <span><strong class="home-feature-title">今天練 5 分鐘</strong><small>複習卡過的概念，換個情境再試</small></span>
+          </button>
+          <button type="button" class="home-feature" id="btn-start-shop">
+            <span class="home-feature-icon" aria-hidden="true">🧺</span>
+            <span><strong class="home-feature-title">森林商店任務</strong><small>跟咪喵聽訂單、挑食材、拼句子</small></span>
+          </button>
         </div>
       </div>
       <img class="adventure-hero-image" src="assets/quest-forest.webp" width="1200" height="800" alt="小貓熊帶著羅盤和故事書，在森林裡準備探險">
     </section>
 
     <section class="adventure-modes" id="adventure-modes" aria-labelledby="modes-title">
-      <h2 id="modes-title">選擇關卡</h2>
-      <p class="adventure-section-note">答錯可以再試一次。前 3 個關卡各有 6 題，完成就能收集星星。</p>
+      <h2 id="modes-title">自由練習</h2>
+      <p class="adventure-section-note">想專心練一種，就從這裡選。</p>
       <div class="adventure-grid">
         <button type="button" class="quest-card quest-letters" data-practice-mode="letters">
           <span class="quest-symbol" aria-hidden="true" lang="en">Aa</span>
@@ -79,17 +97,6 @@
             <p id="dojo-prepared-notice" role="status"></p>
           </div>
         </div>
-      <div class="player-name-bar">
-        <span class="player-icon-badge" aria-hidden="true">👤</span>
-        <label for="player-select-dropdown" id="player-bar-label">小勇士</label>
-        <select id="player-select-dropdown" class="player-select-dropdown" title="選擇已有的小勇士或新增">
-        </select>
-        <div id="new-player-input-wrap" class="new-player-input-wrap" style="display: none;">
-          <input type="text" id="player-name-input" class="player-name-input" aria-label="新小勇士暱稱" placeholder="輸入暱稱" autocomplete="off" maxlength="10">
-          <button type="button" id="btn-confirm-new-player" class="btn-player-action btn-confirm" title="確定新增">✔</button>
-          <button type="button" id="btn-cancel-new-player" class="btn-player-action btn-cancel" title="取消">✖</button>
-        </div>
-      </div>
       </div>
       <div class="character-select-row">
         <article class="char-card" data-theme="dojo">
@@ -373,6 +380,7 @@
   <script src="js/game.js"></script>
   <script src="js/dojo-settings.js"></script>
   <script src="js/practice-questions.js"></script>
+  <script src="js/daily-review.js"></script>
   <script src="js/practice.js"></script>
   <script src="js/shop.js"></script>
 </body>

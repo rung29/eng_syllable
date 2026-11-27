@@ -123,6 +123,7 @@ function makePracticeLetter(upper, index) {
   const answer = towardUpper ? upper : lower;
   return {
     id: upper,
+    concept: 'BDPQ'.includes(upper) ? 'letter-shapes' : 'letter-case',
     instruction: towardUpper ? '找出它的大寫字母。' : '找出它的小寫字母。',
     prompt: towardUpper ? lower : upper,
     promptLang: 'en',
@@ -142,6 +143,7 @@ function makePracticeWord(item, index) {
   const similar = PRACTICE_VOCABULARY.slice(groupStart, groupStart + 4).filter(option => option !== item);
   return {
     id: item.en,
+    concept: ['vocab-food', 'vocab-animals', 'vocab-school', 'vocab-nature'][groupStart / 4],
     instruction: towardEnglish ? '選出這個東西的英文。' : '選出這個英文單字的意思。',
     prompt: towardEnglish ? item.zh : item.en,
     promptLang: towardEnglish ? 'zh-TW' : 'en',
@@ -160,6 +162,8 @@ function makePracticeSentence(item) {
   const completedPrompt = item.template?.replace('___', item.answer);
   return {
     id: item.id,
+    concept: item.concept || (item.group === 'article' ? `article-${item.answer}`
+      : item.group === 'be' ? `be-${item.answer}` : 'sentence-meaning'),
     instruction: item.template ? '選一個字，把句子補完整。' : '選出意思相同的英文句子。',
     prompt: item.template || item.zh,
     promptLang: item.template ? 'en' : 'zh-TW',

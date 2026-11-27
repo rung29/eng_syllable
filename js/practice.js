@@ -1,4 +1,5 @@
 const PRACTICE_MODES = {
+  daily: '今天練 5 分鐘',
   letters: '字母配對',
   words: '生活單字',
   sentences: '基礎句型'
@@ -16,7 +17,7 @@ function readPracticeBest() {
   const best = {};
   try {
     const stored = JSON.parse(localStorage.getItem(PRACTICE_STORAGE_KEY));
-    for (const mode of Object.keys(PRACTICE_MODES)) {
+    for (const mode of Object.keys(PRACTICE_MODES).filter(mode => mode !== 'daily')) {
       const value = stored?.[mode];
       if (Number.isInteger(value) && value >= 1 && value <= 3) best[mode] = value;
     }
@@ -56,7 +57,7 @@ class PracticeController {
 
   recordBest(stars) {
     const stored = readPracticeBest();
-    for (const mode of Object.keys(PRACTICE_MODES)) {
+    for (const mode of Object.keys(PRACTICE_MODES).filter(mode => mode !== 'daily')) {
       this.best[mode] = Math.max(this.best[mode] || 0, stored[mode] || 0);
     }
     this.best[this.mode] = Math.max(stars, this.best[this.mode]);
@@ -73,11 +74,14 @@ class PracticeController {
     if (!Object.hasOwn(PRACTICE_MODES, mode) || window.landingController?.isTransitioning) return;
 
     this.mode = mode;
+    this.playerName = StorageManager.getActivePlayerName();
     this.homeFocus = button;
     this.title.textContent = PRACTICE_MODES[mode];
     this.landing.hidden = true;
     this.app.hidden = false;
-    this.startRound();
+    this.app.classList.toggle('is-daily', mode === 'daily');
+    if (mode === 'daily') this.renderDailyOverview();
+    else this.startRound();
   }
 
   goHome() {
@@ -90,7 +94,9 @@ class PracticeController {
 
   startRound() {
     try {
-      this.questions = buildPracticeRound(this.mode, this.previousRounds[this.mode]);
+      this.questions = this.mode === 'daily'
+        ? this.dailyPlan.questions
+        : buildPracticeRound(this.mode, this.previousRounds[this.mode]);
     } catch (error) {
       console.error(error);
       const message = practiceElement('h2', 'practice-result-title', '這一組題目暫時無法開啟。');
@@ -103,15 +109,59 @@ class PracticeController {
     this.questionIndex = 0;
     this.firstCorrect = 0;
     this.mistakes = [];
+    this.dailyReviewed = 0;
     this.renderQuestion();
+  }
+
+  renderDailyOverview() {
+    this.dailyPlan = buildDailyReviewRound(this.playerName);
+    const { due, next, doneToday, questions } = this.dailyPlan;
+    const heading = practiceElement('h2', 'daily-heading', '今天的練習安排');
+    heading.tabIndex = -1;
+    const summary = this.dailySummary([
+      ['小勇士', this.playerName],
+      ['今天到期', `${due.length} 個概念`],
+      ['今天的進度', doneToday ? '已完成一回合' : '還沒開始']
+    ]);
+    let description = '今天沒有到期的概念，可以等到下次再複習。';
+    if (due.length) description = '從到期的概念開始。這次會換單字或情境。';
+    else if (questions.length) description = doneToday
+      ? '今天已練完一回合。想多練一點，可以再做暖身題。'
+      : '今天沒有到期的概念，先做幾題暖身。';
+    const note = practiceElement('p', 'daily-note', description);
+    const focus = practiceElement('ul', 'daily-focus-list');
+    due.slice(0, 6).forEach(([key]) => focus.append(practiceElement('li', '', DAILY_CONCEPTS[key])));
+    const actions = practiceElement('div', 'practice-actions');
+    if (questions.length) {
+      const start = practiceElement('button', 'practice-primary', `${doneToday ? '再練' : '開始練習'} · ${questions.length} 題`);
+      start.type = 'button';
+      start.onclick = () => this.startRound();
+      actions.append(start);
+    }
+    this.view.replaceChildren(heading, summary, note);
+    if (due.length) this.view.append(focus);
+    if (!due.length && next !== null) this.view.append(practiceElement('p', 'daily-note', `下一次複習是 ${dailyDateLabel(next)}。`));
+    this.view.append(actions);
+    heading.focus();
+  }
+
+  dailySummary(items) {
+    const summary = practiceElement('dl', 'daily-summary');
+    for (const [label, value] of items) {
+      const item = practiceElement('div');
+      item.append(practiceElement('dt', '', label), practiceElement('dd', '', value));
+      summary.append(item);
+    }
+    return summary;
   }
 
   renderQuestion() {
     this.stopSpeech();
     this.wrongChoices = [];
     this.answered = false;
+    this.hadHelp = false;
     this.question = this.questions[this.questionIndex];
-    const { instruction, prompt, promptLang, context, icon, choices, optionLang, speakBefore, speakAfter } = this.question;
+    const { instruction, prompt, promptLang, context, icon, choices, optionLang, speakBefore, speakAfter, listeningTranscript } = this.question;
 
     const meta = practiceElement('div', 'practice-meta');
     this.score = practiceElement('span', '', `首次答對 ${this.firstCorrect} 題`);
@@ -144,10 +194,31 @@ class PracticeController {
       card.append(translation);
     }
 
-    this.speech = this.makeSpeechButton(speakBefore || speakAfter);
+    this.speech = this.makeSpeechButton(speakBefore || speakAfter, {
+      onPlay: () => this.enableListeningChoices(),
+      onError: () => this.listeningText?.removeAttribute('hidden')
+    });
+    this.listeningText = null;
     if (this.speech) {
       this.speech.button.hidden = !speakBefore;
+      if (listeningTranscript) this.speech.button.textContent = '🔊 聽英文指令';
       card.append(this.speech.button, this.speech.notice);
+    }
+    if (listeningTranscript) {
+      this.listeningText = practiceElement('p', 'daily-listening', listeningTranscript);
+      this.listeningText.lang = 'en';
+      this.listeningText.hidden = Boolean(this.speech);
+      if (this.speech) {
+        const transcript = practiceElement('button', 'practice-home', '顯示英文指令');
+        transcript.type = 'button';
+        transcript.onclick = () => {
+          this.listeningText.hidden = false;
+          this.enableListeningChoices();
+          transcript.hidden = true;
+        };
+        card.append(transcript);
+      }
+      card.append(this.listeningText);
     }
 
     const options = practiceElement('div', 'practice-options');
@@ -157,11 +228,13 @@ class PracticeController {
       const button = practiceElement('button', 'practice-option', choice);
       button.type = 'button';
       button.lang = optionLang;
+      button.disabled = Boolean(listeningTranscript && this.speech);
+      button.classList.toggle('is-long-choice', choice.length > 13);
       button.addEventListener('click', () => this.answer(choice, button));
       options.append(button);
       return button;
     });
-    card.append(options);
+    if (this.mode !== 'daily') card.append(options);
 
     this.feedback = practiceElement('p', 'practice-feedback');
     this.feedback.setAttribute('role', 'status');
@@ -172,15 +245,44 @@ class PracticeController {
     this.next.type = 'button';
     this.next.hidden = true;
     this.next.addEventListener('click', () => this.advance());
-    actions.append(this.next);
-    this.view.replaceChildren(meta, this.progress, card, this.feedback, actions);
+    this.helpButton = practiceElement('button', 'practice-secondary', '我卡住了');
+    this.helpButton.type = 'button';
+    this.helpButton.onclick = () => this.showHelp();
+    actions.append(this.helpButton, this.next);
+    this.view.replaceChildren(meta, this.progress);
+    if (this.mode === 'daily') {
+      const kind = this.question.dueReview ? '到期複習' : '暖身題';
+      this.view.append(practiceElement('p', 'daily-kind', kind),
+        card, practiceElement('h3', 'daily-choice-title', '選擇答案'), options);
+    } else {
+      this.view.append(card);
+    }
+    this.view.append(this.feedback, actions);
     heading.focus();
+  }
+
+  enableListeningChoices() {
+    if (!this.question?.listeningTranscript || this.answered) return;
+    for (const option of this.optionButtons) option.disabled = this.wrongChoices.includes(option.textContent);
+  }
+
+  showHelp() {
+    if (this.answered) return;
+    if (!this.hadHelp && !this.wrongChoices.length) {
+      observeDailyPractice(this.playerName, this.question.concept, this.question.id, true);
+    }
+    this.hadHelp = true;
+    this.feedback.className = 'practice-feedback is-wrong';
+    this.feedback.textContent = `提示。 ${this.question.hint}`;
   }
 
   answer(choice, button) {
     if (this.answered || this.wrongChoices.includes(choice)) return;
 
     if (choice !== this.question.answer) {
+      if (!this.hadHelp && !this.wrongChoices.length) {
+        observeDailyPractice(this.playerName, this.question.concept, this.question.id, true);
+      }
       this.wrongChoices.push(choice);
       button.classList.add('is-wrong');
       button.disabled = true;
@@ -192,11 +294,14 @@ class PracticeController {
     }
 
     this.answered = true;
+    this.helpButton.hidden = true;
     button.classList.add('is-correct');
     for (const option of this.optionButtons) option.disabled = true;
-    if (this.wrongChoices.length) {
+    if (this.wrongChoices.length || this.hadHelp) {
       this.mistakes.push({ question: this.question, choices: this.wrongChoices });
     } else {
+      const reviewed = observeDailyPractice(this.playerName, this.question.concept, this.question.id, false);
+      if (reviewed && this.question.dueReview) this.dailyReviewed++;
       this.firstCorrect += 1;
       this.score.textContent = `首次答對 ${this.firstCorrect} 題`;
     }
@@ -221,6 +326,10 @@ class PracticeController {
 
   renderResult() {
     this.stopSpeech();
+    if (this.mode === 'daily') {
+      this.renderDailyResult();
+      return;
+    }
     const stars = this.firstCorrect === this.questions.length ? 3 : this.firstCorrect >= 4 ? 2 : 1;
     this.recordBest(stars);
 
@@ -250,6 +359,42 @@ class PracticeController {
     heading.focus();
   }
 
+  renderDailyResult() {
+    const review = readDailyReview(this.playerName);
+    review.completedDay = dailyDay();
+    saveDailyReview(this.playerName, review);
+    const { due, next } = dailyOverview(this.playerName);
+    const heading = practiceElement('h2', 'daily-heading', '今天的練習完成！');
+    heading.tabIndex = -1;
+    const summary = this.dailySummary([
+      ['這回合', `${this.questions.length} 題`],
+      ['一次答對', `${this.firstCorrect} 題`],
+      ['到期複習答對', `${this.dailyReviewed} 個概念`]
+    ]);
+    const help = new Set(this.mistakes.map(item => item.question.concept));
+    this.view.replaceChildren(heading, summary);
+    if (help.size) {
+      const topics = [...help].map(key => DAILY_CONCEPTS[key]).join('、');
+      this.view.append(practiceElement('p', 'daily-note', `過兩天會換題複習 ${topics}。`));
+    }
+    if (due.length) this.view.append(practiceElement('p', 'daily-note', `今天還有 ${due.length} 個到期概念。`));
+    else if (next !== null) this.view.append(practiceElement('p', 'daily-note', `下一次複習是 ${dailyDateLabel(next)}。`));
+    if (this.mistakes.length) this.view.append(this.makeReview());
+    const actions = practiceElement('div', 'practice-actions');
+    const home = practiceElement('button', 'practice-primary', '回到首頁');
+    home.type = 'button';
+    home.onclick = () => this.goHome();
+    actions.append(home);
+    if (due.length) {
+      const more = practiceElement('button', 'practice-secondary', '繼續複習');
+      more.type = 'button';
+      more.onclick = () => this.renderDailyOverview();
+      actions.append(more);
+    }
+    this.view.append(actions);
+    heading.focus();
+  }
+
   makeReview() {
     const review = practiceElement('section', 'practice-review');
     const list = practiceElement('ul', 'practice-review-list');
@@ -262,7 +407,9 @@ class PracticeController {
       const answer = practiceElement('strong', '', question.answer);
       answer.lang = question.optionLang;
       const details = practiceElement('p', '');
-      details.append('你選過 ', selected, '。正確答案是 ', answer, `。${question.explanation}`);
+      if (choices.length) details.append('你選過 ', selected, '。');
+      else details.append('你看過提示。');
+      details.append('正確答案是 ', answer, `。${question.explanation}`);
       item.append(prompt, details);
       list.append(item);
     }
@@ -270,7 +417,7 @@ class PracticeController {
     return review;
   }
 
-  makeSpeechButton(text) {
+  makeSpeechButton(text, { onPlay, onError } = {}) {
     if (!this.canSpeak || !text) return null;
     const button = practiceElement('button', 'practice-speak', '🔊 聽發音');
     button.type = 'button';
@@ -278,6 +425,7 @@ class PracticeController {
     notice.setAttribute('role', 'status');
     button.addEventListener('click', () => {
       this.stopSpeech();
+      onPlay?.();
       notice.textContent = '';
       const utterance = new window.SpeechSynthesisUtterance(text);
       utterance.lang = 'en-US';
@@ -290,6 +438,7 @@ class PracticeController {
         if (this.utterance !== utterance) return;
         this.utterance = null;
         notice.textContent = '現在無法播放發音，可以繼續答題。';
+        onError?.();
       };
       try {
         window.speechSynthesis.speak(utterance);

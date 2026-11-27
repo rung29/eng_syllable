@@ -1,0 +1,94 @@
+.adventure-header { flex-wrap: wrap; padding-block: 9px; }
+
+.adventure-header-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 7px;
+  max-width: 100%;
+}
+
+.adventure-header-tools .player-name-bar {
+  max-width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #cfe0d4;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.adventure-header-tools .player-name-bar label { font-size: .875rem; }
+.adventure-header-tools .player-select-dropdown {
+  min-height: 34px;
+  max-width: 156px;
+  min-width: 0;
+  border-color: #d6e4d9;
+  background: #f5faf1;
+  padding-inline: 8px;
+}
+
+.home-feature-actions { display: grid; width: 100%; gap: 8px; }
+.home-feature {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  min-height: 60px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 11px;
+  border: 1px solid #b5d0bd;
+  border-radius: 12px;
+  background: #edf4e8;
+  color: #213d30;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.home-feature:hover { background: #fffbe9; }
+.home-feature-daily { background: #ffdd78; border-color: #e0b75b; }
+.home-feature-daily:hover { background: #ffe7a0; }
+.home-feature-icon { font-size: 1.55rem; text-align: center; }
+.home-feature-title { display: block; font-size: 1.1rem; }
+.home-feature small { display: block; margin-top: 3px; font-size: .875rem; line-height: 1.25; }
+.adventure-hero .home-feature:focus-visible { outline-color: #fffceb; }
+
+.practice-app.is-daily .practice-view { padding: clamp(14px, 4vw, 30px); }
+.daily-heading { margin-bottom: 7px; font-size: clamp(1.45rem, 4vw, 1.9rem); }
+.daily-note { color: var(--quest-muted); line-height: 1.5; }
+.daily-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 13px 0;
+}
+
+.daily-summary > div {
+  min-width: 0;
+  padding: 9px 11px;
+  border-radius: 11px;
+  background: #eaf3e7;
+}
+
+.daily-summary dt { font-size: .88rem; color: #48685a; }
+.daily-summary dd { margin: 4px 0 0; font-weight: 800; overflow-wrap: anywhere; }
+.daily-focus-list { margin: 8px 0 13px; padding-inline-start: 23px; line-height: 1.65; }
+.daily-kind {
+  margin: 0 0 8px;
+  font-size: .93rem;
+  color: #225f4b;
+  font-weight: 800;
+}
+
+.is-daily .practice-question { margin-bottom: 12px; padding: 13px; }
+.is-daily .practice-options { width: 100%; margin: 6px 0 10px; }
+.is-daily .practice-actions { justify-content: space-between; align-items: center; }
+.daily-choice-title { margin: 0; font-size: 1.02rem; }
+.daily-listening { font: 750 1.1rem/1.45 var(--font-phonics); }
+
+@media (max-width: 550px) {
+  .adventure-header-tools { justify-content: flex-start; }
+  .adventure-header-tools .btn-leaderboard { font-size: .875rem; }
+  .daily-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .daily-summary > div:first-child { grid-column: 1 / -1; }
+  .is-daily .practice-options:has(.is-long-choice) { grid-template-columns: 1fr; }
+}

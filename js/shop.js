@@ -20,6 +20,8 @@ const FOREST_SHOP_ORDERS = [
     shelf: ['apple', 'banana', 'orange', 'pear', 'grapes', 'carrot'],
     needs: { apple: 1, banana: 1 },
     cue: '🍎 我有一顆蘋果。',
+    sentenceConcept: 'article-an',
+    sentenceVariant: 'an-apple',
     phrase: ['I', 'have', 'an', 'apple'],
     extra: 'a',
     hint: 'apple 的開頭是母音聲音，可以說 an apple。'
@@ -30,6 +32,8 @@ const FOREST_SHOP_ORDERS = [
     shelf: ['sandwich', 'bread', 'milk', 'juice', 'egg', 'cheese'],
     needs: { sandwich: 1, milk: 1 },
     cue: '🥪 我有一份三明治。',
+    sentenceConcept: 'article-a',
+    sentenceVariant: 'a-sandwich',
     phrase: ['I', 'have', 'a', 'sandwich'],
     extra: 'an',
     hint: 'sandwich 的開頭是子音聲音，可以說 a sandwich。'
@@ -40,6 +44,8 @@ const FOREST_SHOP_ORDERS = [
     shelf: ['orange', 'juice', 'apple', 'banana', 'milk', 'sandwich'],
     needs: { orange: 1, juice: 1 },
     cue: '🧃 我有一些果汁。',
+    sentenceConcept: 'some-food',
+    sentenceVariant: 'some-juice',
     phrase: ['I', 'have', 'some', 'juice'],
     extra: 'a',
     hint: '要說「一些果汁」，可以用 some juice。'
@@ -50,6 +56,8 @@ const FOREST_SHOP_ORDERS = [
     shelf: ['egg', 'pear', 'apple', 'carrot', 'cheese', 'grapes'],
     needs: { egg: 2, pear: 1 },
     cue: '🥚🥚 我有兩顆蛋。',
+    sentenceConcept: 'plural-quantity',
+    sentenceVariant: 'two-eggs',
     phrase: ['I', 'have', 'two', 'eggs'],
     extra: 'one',
     hint: 'two 表示兩個。蛋超過一顆時，這句用 eggs。'
@@ -104,10 +112,13 @@ class ForestShop {
 
   open() {
     if (window.landingController?.isTransitioning) return;
+    const player = StorageManager.getActivePlayerName();
+    const changedPlayer = this.playerName !== player;
+    this.playerName = player;
     this.landing.hidden = true;
     this.app.hidden = false;
     window.scrollTo(0, 0);
-    if (!this.phase || this.phase === 'finished') this.startOrder(0);
+    if (changedPlayer || !this.phase || this.phase === 'finished') this.startOrder(0);
     else this.view.querySelector('h2')?.focus({ preventScroll: true });
   }
 
@@ -115,7 +126,6 @@ class ForestShop {
     window.soundEngine.cancelSpeech();
     this.app.hidden = true;
     this.landing.hidden = false;
-    this.launchButton.textContent = this.phase === 'finished' ? '再玩森林商店任務' : '繼續森林商店任務';
     this.launchButton.focus();
   }
 
@@ -154,6 +164,8 @@ class ForestShop {
     this.phase = 'shopping';
     this.heardOrder = false;
     this.basket = [];
+    this.shoppingMistakes = new Set();
+    this.sentenceMistakes = new Set();
     this.itemButtons = new Map();
     this.hostMessage.textContent = this.order.story;
     this.updateProgress(index);
@@ -280,8 +292,18 @@ class ForestShop {
     const counts = countShopItems(this.basket);
     const required = Object.entries(this.order.needs);
     if (counts.size !== required.length || required.some(([key, quantity]) => counts.get(key) !== quantity)) {
+      const countOnly = counts.size === required.length && required.every(([key]) => counts.has(key));
+      const concept = countOnly ? 'shop-quantity' : 'shop-listening';
+      if (!this.shoppingMistakes.has(concept)) {
+        observeDailyPractice(this.playerName, concept, `shop-order-${this.orderIndex}`, true);
+        this.shoppingMistakes.add(concept);
+      }
       this.setFeedback('再聽一次英文指令，看看有沒有拿錯食材或數量。點籃子裡的食材可以拿出。', true);
       return;
+    }
+    const concept = required.some(([, quantity]) => quantity > 1) ? 'shop-quantity' : 'shop-listening';
+    if (!this.shoppingMistakes.has(concept)) {
+      observeDailyPractice(this.playerName, concept, `shop-order-${this.orderIndex}`, false);
     }
     this.startSentence();
   }
@@ -349,8 +371,20 @@ class ForestShop {
     if (this.phase !== 'sentence' || this.checkSentenceButton.disabled) return;
     if (!this.order.phrase.every((word, position) => this.wordBank[this.selected[position]] === word)) {
       const startsWithSubject = this.wordBank[this.selected[0]] === 'I' && this.wordBank[this.selected[1]] === 'have';
-      this.setFeedback(startsWithSubject ? this.order.hint : '可以先拼 I have，接著放表示食材的字。', true);
+      const endsWithItem = this.wordBank[this.selected.at(-1)] === this.order.phrase.at(-1);
+      const target = startsWithSubject && endsWithItem;
+      const concept = target ? this.order.sentenceConcept : 'word-order';
+      if (!this.sentenceMistakes.has(concept)) {
+        observeDailyPractice(this.playerName, concept, this.order.sentenceVariant, true);
+        this.sentenceMistakes.add(concept);
+      }
+      this.setFeedback(target ? this.order.hint : '先拼 I have，再把食材放在句子末尾。', true);
       return;
+    }
+    for (const concept of [this.order.sentenceConcept, 'word-order']) {
+      if (!this.sentenceMistakes.has(concept)) {
+        observeDailyPractice(this.playerName, concept, this.order.sentenceVariant, false);
+      }
     }
 
     this.phase = 'confirmed';
