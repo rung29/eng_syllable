@@ -161,6 +161,20 @@
     <div id="practice-view" class="practice-view"></div>
   </main>
 
+  <main id="daily-records-app" class="practice-app daily-records-app" aria-labelledby="daily-records-title" hidden>
+    <header class="practice-header">
+      <button type="button" class="practice-home" id="btn-exit-daily-records">返回每日練習</button>
+      <h1 id="daily-records-title" tabindex="-1">複習紀錄</h1>
+    </header>
+    <div class="practice-view">
+      <div class="daily-records-filter">
+        <label for="daily-records-player">查看小勇士</label>
+        <select id="daily-records-player"></select>
+      </div>
+      <div id="daily-records-view"></div>
+    </div>
+  </main>
+
   <!-- ============================================================ -->
   <!-- 遊戲主體視窗 (初始強制隱藏，選完角色後才跳入顯示！)          -->
   <!-- ============================================================ -->
@@ -382,6 +396,7 @@
   <script src="js/practice-questions.js"></script>
   <script src="js/daily-review.js"></script>
   <script src="js/practice.js"></script>
+  <script src="js/daily-records.js"></script>
   <script src="js/shop.js"></script>
 </body>
 </html>

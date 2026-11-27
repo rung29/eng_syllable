@@ -118,7 +118,7 @@ class PracticeController {
     const { due, next, doneToday, questions } = this.dailyPlan;
     const heading = practiceElement('h2', 'daily-heading', '今天的練習安排');
     heading.tabIndex = -1;
-    const summary = this.dailySummary([
+    const summary = practiceSummary([
       ['小勇士', this.playerName],
       ['今天到期', `${due.length} 個概念`],
       ['今天的進度', doneToday ? '已完成一回合' : '還沒開始']
@@ -138,6 +138,7 @@ class PracticeController {
       start.onclick = () => this.startRound();
       actions.append(start);
     }
+    actions.append(this.makeDailyRecordsButton());
     this.view.replaceChildren(heading, summary, note);
     if (due.length) this.view.append(focus);
     if (!due.length && next !== null) this.view.append(practiceElement('p', 'daily-note', `下一次複習是 ${dailyDateLabel(next)}。`));
@@ -145,14 +146,11 @@ class PracticeController {
     heading.focus();
   }
 
-  dailySummary(items) {
-    const summary = practiceElement('dl', 'daily-summary');
-    for (const [label, value] of items) {
-      const item = practiceElement('div');
-      item.append(practiceElement('dt', '', label), practiceElement('dd', '', value));
-      summary.append(item);
-    }
-    return summary;
+  makeDailyRecordsButton() {
+    const button = practiceElement('button', 'practice-secondary', '複習紀錄');
+    button.type = 'button';
+    button.onclick = () => window.dailyRecords.open(this.app, button, this.playerName);
+    return button;
   }
 
   renderQuestion() {
@@ -366,7 +364,7 @@ class PracticeController {
     const { due, next } = dailyOverview(this.playerName);
     const heading = practiceElement('h2', 'daily-heading', '今天的練習完成！');
     heading.tabIndex = -1;
-    const summary = this.dailySummary([
+    const summary = practiceSummary([
       ['這回合', `${this.questions.length} 題`],
       ['一次答對', `${this.firstCorrect} 題`],
       ['到期複習答對', `${this.dailyReviewed} 個概念`]
@@ -384,7 +382,7 @@ class PracticeController {
     const home = practiceElement('button', 'practice-primary', '回到首頁');
     home.type = 'button';
     home.onclick = () => this.goHome();
-    actions.append(home);
+    actions.append(home, this.makeDailyRecordsButton());
     if (due.length) {
       const more = practiceElement('button', 'practice-secondary', '繼續複習');
       more.type = 'button';
@@ -454,6 +452,16 @@ class PracticeController {
     this.utterance = null;
     window.speechSynthesis.cancel();
   }
+}
+
+function practiceSummary(items) {
+  const summary = practiceElement('dl', 'daily-summary');
+  for (const [label, value] of items) {
+    const item = practiceElement('div');
+    item.append(practiceElement('dt', '', label), practiceElement('dd', '', value));
+    summary.append(item);
+  }
+  return summary;
 }
 
 window.addEventListener('DOMContentLoaded', () => {

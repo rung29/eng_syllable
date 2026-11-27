@@ -51,6 +51,7 @@ const DAILY_LISTENING = [
 
 const DAILY_RETRY_DAYS = 2;
 const DAILY_GAP_DAYS = [3, 7, 14, 30];
+const DAILY_MASTERY_STREAK = 3;
 
 function dailyDay(now = new Date()) {
   return Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
@@ -68,7 +69,12 @@ function readDailyReview(player) {
     if (Object.hasOwn(DAILY_CONCEPTS, key) && Number.isSafeInteger(info?.due) &&
         info.due >= 0 && info.due < 1000000 && Number.isInteger(info.step) &&
         info.step >= 0 && info.step < DAILY_GAP_DAYS.length && typeof info.variant === 'string') {
-      entries[key] = { due: info.due, step: info.step, variant: info.variant };
+      const hasCount = Number.isSafeInteger(info.helpCount) && info.helpCount > 0;
+      entries[key] = {
+        due: info.due, step: info.step, variant: info.variant,
+        helpCount: hasCount ? info.helpCount : 1,
+        helpCountIsMinimum: !hasCount || info.helpCountIsMinimum === true
+      };
     }
   }
   const recent = Array.isArray(raw?.recent) ? raw.recent.filter(id => typeof id === 'string').slice(0, 64) : [];
@@ -91,9 +97,14 @@ function observeDailyPractice(player, concept, variant, needsHelp, day = dailyDa
   review.recent = [id, ...review.recent.filter(item => item !== id)].slice(0, 64);
   let reviewed = false;
   if (needsHelp) {
-    review.entries[concept] = { due: day + DAILY_RETRY_DAYS, step: 0, variant };
+    review.entries[concept] = {
+      due: day + DAILY_RETRY_DAYS, step: 0, variant,
+      helpCount: Math.min((current?.helpCount || 0) + 1, Number.MAX_SAFE_INTEGER),
+      helpCountIsMinimum: current?.helpCountIsMinimum || false
+    };
   } else if (current && current.due <= day && current.variant !== variant) {
     review.entries[concept] = {
+      ...current,
       due: day + DAILY_GAP_DAYS[current.step],
       step: Math.min(current.step + 1, DAILY_GAP_DAYS.length - 1),
       variant

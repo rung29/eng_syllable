@@ -85,10 +85,65 @@
 .daily-choice-title { margin: 0; font-size: 1.02rem; }
 .daily-listening { font: 750 1.1rem/1.45 var(--font-phonics); }
 
+.daily-records-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font-weight: 800;
+}
+
+.daily-records-filter select {
+  min-height: 44px;
+  max-width: 100%;
+  min-width: min(160px, 100%);
+  padding: 7px 12px;
+  border: 1px solid #b6d3c4;
+  border-radius: 10px;
+  background: #f6fcf5;
+  color: var(--quest-ink);
+  font: inherit;
+}
+
+.daily-records-section { margin-top: 17px; }
+.daily-records-section h2 { margin-bottom: 7px; font-size: 1.2rem; }
+.daily-records-empty { border-radius: 10px; padding: 10px 12px; background: #f4f7ee; line-height: 1.5; }
+.daily-records-list { display: grid; gap: 7px; list-style: none; }
+.daily-records-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(205px, auto);
+  gap: 7px 15px;
+  padding: 9px 11px;
+  align-items: start;
+  border: 1px solid #dce6dc;
+  border-radius: 11px;
+}
+
+.daily-records-concept h3 { font-size: 1rem; line-height: 1.45; }
+.daily-records-details { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 7px; }
+.daily-records-details .daily-note { flex-basis: 100%; }
+.daily-records-date { font-weight: 750; line-height: 1.45; }
+.daily-records-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: #e8f3e7;
+  color: #285649;
+  font-weight: 750;
+  font-size: .875rem;
+}
+
+.daily-records-tag.is-due { background: #ffebbf; color: #633c13; }
+.daily-records-rule { margin-top: 13px; }
+
 @media (max-width: 550px) {
   .adventure-header-tools { justify-content: flex-start; }
   .adventure-header-tools .btn-leaderboard { font-size: .875rem; }
   .daily-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .daily-summary > div:first-child { grid-column: 1 / -1; }
   .is-daily .practice-options:has(.is-long-choice) { grid-template-columns: 1fr; }
+  .daily-records-app .daily-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .daily-records-app .daily-summary > div:first-child { grid-column: auto; }
+  .daily-records-app .daily-summary dt { line-height: 1.35; }
+  .daily-records-row { grid-template-columns: minmax(0, 1fr); }
 }
