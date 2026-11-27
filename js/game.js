@@ -950,7 +950,7 @@ class SyllableGame {
     leftPiece.id = 'piece-left';
 
     leftWrapper.appendChild(leftPiece);
-    if (wordObj.speechSyllables) leftWrapper.appendChild(this.makeSyllableButton(wordObj, 0, leftPiece));
+    leftWrapper.appendChild(this.makeSyllableButton(wordObj, 0, leftPiece));
 
     // 右半部
     const rightWrapper = document.createElement('div');
@@ -961,7 +961,7 @@ class SyllableGame {
     rightPiece.id = 'piece-right';
 
     rightWrapper.appendChild(rightPiece);
-    if (wordObj.speechSyllables) rightWrapper.appendChild(this.makeSyllableButton(wordObj, 1, rightPiece));
+    rightWrapper.appendChild(this.makeSyllableButton(wordObj, 1, rightPiece));
 
     const chars = wordObj.word.split('');
     const splitIndex = wordObj.splitIndex;
@@ -1030,14 +1030,11 @@ class SyllableGame {
     const row = document.createElement('div');
     if (this.hasAnswered) {
       row.className = 'board-piece solved-segments';
-      row.setAttribute('aria-hidden', 'true');
-      for (const syllable of word.syllables) {
-        const tag = document.createElement('span');
-        tag.className = 'dojo-solved-syllable';
-        tag.lang = 'en';
-        tag.textContent = syllable;
-        row.append(tag);
-      }
+      word.syllables.forEach((_, index) => {
+        const button = this.makeSyllableButton(word, index);
+        button.classList.add('dojo-solved-syllable');
+        row.append(button);
+      });
     } else {
       row.className = 'board-piece selectable-cuts';
       const chars = [...word.word];
@@ -1079,20 +1076,22 @@ class SyllableGame {
       expected.every(cut => this.selectedCuts.has(cut)));
   }
 
-  makeSyllableButton(word, index, piece) {
+  makeSyllableButton(word, index, piece = null) {
     const button = document.createElement('button');
     const syllable = word.syllables[index];
     button.type = 'button';
     button.className = 'syllable-phonetic-badge';
     button.textContent = `🔊 ${syllable}`;
     button.setAttribute('aria-label', `聽音節 ${syllable}`);
+    button.hidden = !this.hasAnswered;
     button.disabled = true;
     button.onclick = () => {
       this.clearPronunciationHighlight();
-      piece.classList.add('highlight-read');
-      window.soundEngine.speakSingleSyllable(word.speechSyllables?.[index] || syllable);
+      const highlight = piece || button;
+      highlight.classList.add('highlight-read');
+      window.soundEngine.speakSingleSyllable(getDojoSyllableSpeech(word)[index]);
       this.pronunciationHighlightTimer = setTimeout(() => {
-        piece.classList.remove('highlight-read');
+        highlight.classList.remove('highlight-read');
       }, 600);
     };
     return button;
@@ -1117,6 +1116,7 @@ class SyllableGame {
     this.btnSpeakWord.disabled = !canSpeak;
     this.btnSpeakWord.title = unavailableReason || '聽單字發音';
     this.boardContainer.querySelectorAll('.syllable-phonetic-badge').forEach(button => {
+      button.hidden = !this.hasAnswered;
       button.disabled = !this.hasAnswered || !canSpeak;
       button.title = unavailableReason || button.getAttribute('aria-label');
     });
@@ -1179,25 +1179,15 @@ class SyllableGame {
       this.btnNextWord.hidden = false;
       this.btnNextWord.focus();
 
-      if (this.practiceRound || !wordObj.speechSyllables) {
-        window.soundEngine.speakWord(wordObj.word);
-        return;
-      }
-      const leftPiece = this.boardContainer.querySelector('.left-piece');
-      const rightPiece = this.boardContainer.querySelector('.right-piece');
-      window.soundEngine.speakPhonicsSequence(
-        wordObj.syllables[0], wordObj.syllables[1], wordObj.word,
-        wordObj.speechSyllables?.[0], wordObj.speechSyllables?.[1],
-        {
-          onSyllable1: () => leftPiece.classList.add('highlight-read'),
-          onSyllable2: () => {
-            leftPiece.classList.remove('highlight-read');
-            rightPiece.classList.add('highlight-read');
-          },
-          onFullWord: () => leftPiece.classList.add('highlight-read'),
-          onDone: () => this.clearPronunciationHighlight()
-        }
-      );
+      const targets = this.boardContainer.querySelectorAll(this.practiceRound
+        ? '.dojo-solved-syllable'
+        : '.left-piece, .right-piece');
+      window.soundEngine.speakPhonicsSequence(getDojoSyllableSpeech(wordObj), wordObj.word, {
+        onStep: step => targets.forEach((target, index) => {
+          target.classList.toggle('highlight-read', step === index || step === targets.length);
+        }),
+        onDone: () => this.clearPronunciationHighlight()
+      });
 
     } else {
       this.hadWrongAttempt = true;

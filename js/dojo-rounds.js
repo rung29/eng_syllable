@@ -185,7 +185,13 @@ function normalizeGeminiWords(items, settings = DOJO_DEFAULT_SETTINGS) {
     const meaning = typeof item.meaning === 'string' ? item.meaning.trim() : '';
     if (!meaning || meaning.length > 28 || !/^[\p{Script=Han}A-Za-z0-9（）()／、· \-]+$/u.test(meaning) ||
         !/\p{Script=Han}/u.test(meaning)) continue;
-    words.set(word, { word, syllables, meaning, topic, difficulty });
+    const entry = { word, syllables, meaning, topic, difficulty };
+    const speech = item.speechSyllables;
+    if (Array.isArray(speech) && speech.length === syllables.length &&
+        speech.every(part => typeof part === 'string' && /^[a-z]{1,20}$/i.test(part))) {
+      entry.speechSyllables = speech.map(part => part.toLowerCase());
+    }
+    words.set(word, entry);
   }
   return matchingDojoWords([...words.values()], settings);
 }

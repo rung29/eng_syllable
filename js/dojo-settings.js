@@ -17,6 +17,7 @@ async function requestGeminiDojoWords(settings, exclude, key, signal) {
     'Create a vocabulary practice word list for elementary school children in Taiwan learning US English.',
     'Return real single lowercase words (2–16 ASCII letters), with short accurate Traditional Chinese meanings.',
     'Use one standard American instructional spelling-based syllable division. Every group must be a consecutive nonempty substring and the groups must rejoin to exactly the original word.',
+    'For speechSyllables, give one short Latin-letter sound-alike spelling per group for US English text-to-speech in isolation. Use no spaces, punctuation, or IPA. Example: for the written groups ti and ger in tiger, use tie and gurr.',
     'The number of groups must match the spoken syllable count. Avoid ambiguous or dialect-dependent counts, names, abbreviations, hyphens, and adult or unsafe words.',
     'Generate different initial letters, lengths, and cut positions. easy means common words for beginners, medium means familiar words with more difficult spelling, hard means less common or structurally harder age-appropriate words.',
     `Topics: ${topicChoices.map(topic => topic + '=' + DOJO_TOPICS[topic]).join(', ')}.`,
@@ -47,10 +48,11 @@ async function requestGeminiDojoWords(settings, exclude, key, signal) {
               maxItems: settings.size,
               items: {
                 type: 'object',
-                required: ['word', 'syllables', 'meaning', 'topic', 'difficulty'],
+                required: ['word', 'syllables', 'speechSyllables', 'meaning', 'topic', 'difficulty'],
                 properties: {
                   word: { type: 'string' },
                   syllables: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 4 },
+                  speechSyllables: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 4 },
                   meaning: { type: 'string' },
                   topic: { type: 'string', enum: topicChoices },
                   difficulty: { type: 'string', enum: difficultyChoices }

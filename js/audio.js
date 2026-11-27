@@ -269,35 +269,24 @@ class SoundEngine {
     osc.stop(now + 0.04);
   }
 
-  /**
-   * 依序朗讀：第一音節 -> 第二音節 -> 完整單字
-   * @param {string} s1 畫面上音節文字1 (例如 "hap")
-   * @param {string} s2 畫面上音節文字2 (例如 "py")
-   * @param {string} fullWord 完整單字 (例如 "happy")
-   * @param {string} speechS1 實際發音音素 (例如 "hap")
-   * @param {string} speechS2 實際發音音素 (例如 "pee"，確保 py 發 [piː] 而非 [paɪ])
-   * @param {object} callbacks 回呼函式
-   */
-  speakPhonicsSequence(s1, s2, fullWord, speechS1, speechS2, callbacks = {}) {
+  speakPhonicsSequence(syllables, fullWord, { onStep, onDone } = {}) {
     if (!this.canSpeak) return;
 
     this.cancelSpeech();
-    const steps = [
-      this.makeUtterance(speechS1 || s1, 0.85),
-      this.makeUtterance(speechS2 || s2, 0.85),
-      this.makeUtterance(fullWord, 0.95)
-    ];
+    const steps = syllables.length > 1
+      ? syllables.map(syllable => this.makeUtterance(syllable, 0.85))
+      : [];
+    steps.push(this.makeUtterance(fullWord, 0.95));
     this.activeUtterances = steps;
 
     const finish = () => {
       if (this.activeUtterances !== steps) return;
       this.activeUtterances = [];
-      if (callbacks.onDone) callbacks.onDone();
+      onDone?.();
     };
-    const onStart = [callbacks.onSyllable1, callbacks.onSyllable2, callbacks.onFullWord];
     steps.forEach((utterance, index) => {
       utterance.onstart = () => {
-        if (this.activeUtterances === steps) onStart[index]?.();
+        if (this.activeUtterances === steps) onStep?.(index);
       };
       utterance.onend = () => {
         if (this.activeUtterances !== steps) return;

@@ -588,12 +588,18 @@ body:has(.practice-app:not([hidden])) {
 
 .free-cuts .solved-segments { flex-wrap: wrap; justify-content: center; gap: 7px; }
 .dojo-solved-syllable {
+  margin-top: 0;
   padding: 8px 12px;
   border: 2px solid #d9bb8c;
   border-radius: 10px;
   background: #fff3d9;
   color: #452d20;
   font: 700 clamp(1.2rem, 5vw, 2.2rem)/1.1 var(--font-phonics);
+}
+
+.dojo-solved-syllable.highlight-read {
+  background: #ffe387;
+  border-color: #906218;
 }
 
 .belt-chevron {
