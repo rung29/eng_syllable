@@ -260,6 +260,12 @@
       <!-- 上半部：修煉木板懸掛區 -->
       <div class="target-area">
         <div class="board-container" id="board-container"></div>
+        <div class="word-info-row">
+          <div class="meaning-text" id="meaning-text">鬆餅 🥞</div>
+          <button type="button" class="speak-word-btn" id="btn-speak-word" title="再聽一次單字發音">
+            <span aria-hidden="true">🔊</span> 聽發音
+          </button>
+        </div>
         <p class="dojo-instruction" id="dojo-instruction">選擇兩個字母中間的切點，把單字分成兩段。</p>
         <div id="dojo-cut-actions" class="dojo-cut-actions" hidden>
           <span id="dojo-cut-count" role="status">選了 0 個切點</span>
@@ -272,15 +278,9 @@
         <button type="button" class="btn-primary-large btn-next-word" id="btn-next-word" hidden>下一題</button>
       </div>
 
-      <!-- 下半部：角色與字義互動區 -->
+      <!-- 下半部：道場角色 -->
       <div class="character-stage">
         <div id="mascot-container"></div>
-        <div class="word-info-card">
-          <div class="meaning-text" id="meaning-text">鬆餅 🥞</div>
-          <button class="speak-word-btn" id="btn-speak-word" title="再聽一次單字發音">
-            <span>🔊 聽發音</span>
-          </button>
-        </div>
       </div>
     </div>
 

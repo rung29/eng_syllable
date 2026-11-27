@@ -1169,7 +1169,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 15px 0 20px 0;
+  margin: 15px 0 12px;
   perspective: 1000px;
 }
 
@@ -1530,10 +1530,9 @@ body {
   }
 }
 
-/* 下半部：道場修煉角色與操作互動區 */
+/* 下半部：道場修煉角色 */
 .character-stage {
   display: flex;
-  justify-content: space-between;
   align-items: flex-end;
   position: relative;
   height: 240px;
@@ -1697,23 +1696,22 @@ body {
   }
 }
 
-/* 右側輔助發音與字義卡 */
-.word-info-card {
-  background: rgba(255, 255, 255, 0.94);
-  border: 3px solid #D7CCC8;
-  border-radius: 20px;
-  padding: 16px 24px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+/* 木板下方的字義與整字發音 */
+.word-info-row {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  gap: 10px;
-  min-width: 270px;
-  z-index: 10;
+  gap: 4px 12px;
+  max-width: 100%;
+  margin-bottom: 8px;
+  text-align: center;
 }
 
 .meaning-text {
-  font-size: 22px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(18px, 3vw, 21px);
   font-weight: 800;
   color: #4E342E;
 }
@@ -1726,8 +1724,9 @@ body {
   border: 2px solid #81C784;
   color: #2E7D32;
   border-radius: 16px;
-  padding: 8px 18px;
+  padding: 6px 12px;
   min-height: 44px;
+  white-space: nowrap;
   font-weight: bold;
   font-size: 14px;
   cursor: pointer;
@@ -2104,11 +2103,6 @@ body {
   .character-stage {
     padding: 0 16px;
   }
-
-  .word-info-card {
-    min-width: 220px;
-    padding: 12px 18px;
-  }
 }
 
 @media (max-width: 640px) {
@@ -2173,26 +2167,14 @@ body {
   }
 
   .character-stage {
-    align-items: flex-end;
     justify-content: center;
-    flex-wrap: wrap;
     height: auto;
-    gap: 8px;
     padding: 0;
   }
 
   #mascot-container {
     width: clamp(100px, 28vw, 150px);
     height: clamp(112px, 31vw, 167px);
-  }
-
-  .word-info-card {
-    padding: 10px 14px;
-    min-width: 0;
-  }
-
-  .meaning-text {
-    font-size: 19px;
   }
 
   .modal-content {
