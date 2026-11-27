@@ -318,18 +318,27 @@ class SoundEngine {
     this.speakWord(spokenText, 0.85);
   }
 
-  speakWord(text, rate = 0.9) {
-    if (!this.canSpeak) return;
+  speakWord(text, rate = 0.9, { onEnd, onError } = {}) {
+    if (!this.canSpeak) {
+      onError?.();
+      return;
+    }
     this.cancelSpeech();
     const utterance = this.makeUtterance(text, rate);
     this.activeUtterances = [utterance];
-    const finish = () => {
-      if (this.activeUtterances[0] === utterance) this.activeUtterances = [];
+    const complete = callback => {
+      if (this.activeUtterances[0] !== utterance) return;
+      this.activeUtterances = [];
+      callback?.();
     };
-    utterance.onend = finish;
-    utterance.onerror = finish;
-    if (this.speechSynth.paused) this.speechSynth.resume();
-    this.speechSynth.speak(utterance);
+    utterance.onend = () => complete(onEnd);
+    utterance.onerror = () => complete(onError);
+    try {
+      if (this.speechSynth.paused) this.speechSynth.resume();
+      this.speechSynth.speak(utterance);
+    } catch {
+      complete(onError);
+    }
   }
 
   makeUtterance(text, rate) {

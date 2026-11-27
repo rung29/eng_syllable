@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400;1,700&family=Comic+Neue:wght@700&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/adventure.css">
+  <link rel="stylesheet" href="css/shop.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧭</text></svg>">
 </head>
 <body>
@@ -28,8 +29,11 @@
     <section class="adventure-hero" aria-labelledby="home-title">
       <div class="adventure-hero-copy">
         <h1 id="home-title">英語冒險島</h1>
-        <p>從大小寫字母到生活單字，<br class="hero-line-break">選一個關卡，照自己的步調闖關！</p>
-        <a class="adventure-start" href="#adventure-modes">選擇關卡</a>
+        <p>到森林商店幫咪喵準備野餐。<br class="hero-line-break">聽英文、找食材，再拼出一句話。約 5 分鐘。</p>
+        <div class="shop-hero-actions">
+          <button type="button" class="adventure-start" id="btn-start-shop">開始森林商店任務</button>
+          <a class="shop-level-link" href="#adventure-modes">其他練習</a>
+        </div>
       </div>
       <img class="adventure-hero-image" src="assets/quest-forest.webp" width="1200" height="800" alt="小貓熊帶著羅盤和故事書，在森林裡準備探險">
     </section>
@@ -122,6 +126,24 @@
         </article>
       </div>
     </section>
+  </main>
+
+  <main id="shop-app" class="shop-app" aria-labelledby="shop-title" hidden>
+    <header class="shop-header">
+      <button type="button" class="practice-home" id="btn-shop-home">回到首頁</button>
+      <h1 id="shop-title">森林商店</h1>
+      <p id="shop-progress-text"></p>
+    </header>
+    <progress id="shop-progress" class="shop-progress" max="4" value="0" aria-label="野餐訂單進度"></progress>
+
+    <section class="shop-host" aria-label="咪喵店長">
+      <img src="assets/mimi.webp" width="456" height="570" alt="">
+      <div class="shop-host-text">
+        <p class="shop-host-name">咪喵店長 <span lang="en">Mimi</span></p>
+        <p id="shop-host-message">野餐要開始了，可以幫我準備食材嗎？</p>
+      </div>
+    </section>
+    <div id="shop-view" class="shop-view"></div>
   </main>
 
   <main id="practice-app" class="practice-app" aria-labelledby="practice-title" hidden>
@@ -352,5 +374,6 @@
   <script src="js/dojo-settings.js"></script>
   <script src="js/practice-questions.js"></script>
   <script src="js/practice.js"></script>
+  <script src="js/shop.js"></script>
 </body>
 </html>
