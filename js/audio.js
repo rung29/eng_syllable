@@ -288,7 +288,7 @@ class SoundEngine {
       utterance.onstart = () => {
         if (this.activeUtterances === steps) onStep?.(index);
       };
-      utterance.onend = () => {
+      const advance = () => {
         if (this.activeUtterances !== steps) return;
         const next = steps[index + 1];
         if (!next) {
@@ -300,7 +300,11 @@ class SoundEngine {
           if (this.activeUtterances === steps) this.speechSynth.speak(next);
         }, 350);
       };
-      utterance.onerror = finish;
+      utterance.onend = advance;
+      utterance.onerror = event => {
+        if (event.error === 'synthesis-failed') advance();
+        else finish();
+      };
     });
 
     if (this.speechSynth.paused) this.speechSynth.resume();

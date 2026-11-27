@@ -600,6 +600,7 @@ class SyllableGame {
     this.cutActions = document.getElementById('dojo-cut-actions');
     this.cutCount = document.getElementById('dojo-cut-count');
     this.checkCuts = document.getElementById('btn-check-cuts');
+    this.revealAnswer = document.getElementById('btn-reveal-answer');
     this.adjustDojo = document.getElementById('btn-adjust-dojo');
 
     // 更新頂部玩家姓名徽章
@@ -688,6 +689,11 @@ class SyllableGame {
     };
 
     this.checkCuts.onclick = () => this.checkPracticeAnswer();
+    this.revealAnswer.onclick = () => {
+      if (this.practiceRound && !this.hasAnswered && !this.isDestroyed && !this.revealAnswer.hidden) {
+        this.finishAnswer(true);
+      }
+    };
     this.adjustDojo.onclick = () => {
       this.setUpgradeDialogOpen(false);
       window.dojoSettings.open();
@@ -856,6 +862,7 @@ class SyllableGame {
     this.currentWordIndex = 0;
     this.combo = 0;
     this.practiceFirstTry = 0;
+    this.practiceRevealed = 0;
     this.comboTextEl.textContent = '連擊 x0';
     this.setHints(this.isHintActive);
     const level = this.getCurrentLevel();
@@ -894,7 +901,7 @@ class SyllableGame {
 
   loadWord() {
     this.hasAnswered = false;
-    this.hadWrongAttempt = false;
+    this.wrongAttempts = 0;
     this.selectedCuts = new Set();
     window.soundEngine.cancelSpeech();
     this.clearPronunciationHighlight();
@@ -912,6 +919,7 @@ class SyllableGame {
     this.boardContainer.setAttribute('aria-label', `切開英文單字 ${wordObj.word}`);
     this.btnNextWord.hidden = true;
     this.cutActions.hidden = !this.practiceRound;
+    this.revealAnswer.hidden = true;
     this.instruction.textContent = this.practiceRound
       ? '選出所有切點再檢查。點同一處可取消，長單字可以左右滑。'
       : '選擇兩個字母中間的切點，把單字分成兩段。';
@@ -934,34 +942,15 @@ class SyllableGame {
 
     if (this.practiceRound) {
       this.boardContainer.classList.add('free-cuts');
-      this.renderPracticeTiles(woodenBoard, wordObj);
+      this.renderPracticeCuts(woodenBoard, wordObj.word);
       this.boardContainer.appendChild(woodenBoard);
       this.updateHintVisibility();
       this.updatePronunciationControls();
       return;
     }
 
-    // 左半部
-    const leftWrapper = document.createElement('div');
-    leftWrapper.className = 'board-piece-wrapper left-piece-wrapper';
-
-    const leftPiece = document.createElement('div');
-    leftPiece.className = 'board-piece left-piece';
-    leftPiece.id = 'piece-left';
-
-    leftWrapper.appendChild(leftPiece);
-    leftWrapper.appendChild(this.makeSyllableButton(wordObj, 0, leftPiece));
-
-    // 右半部
-    const rightWrapper = document.createElement('div');
-    rightWrapper.className = 'board-piece-wrapper right-piece-wrapper';
-
-    const rightPiece = document.createElement('div');
-    rightPiece.className = 'board-piece right-piece';
-    rightPiece.id = 'piece-right';
-
-    rightWrapper.appendChild(rightPiece);
-    rightWrapper.appendChild(this.makeSyllableButton(wordObj, 1, rightPiece));
+    const { wrapper: leftWrapper, piece: leftPiece } = this.makeBoardPiece(wordObj, 0, 'left');
+    const { wrapper: rightWrapper, piece: rightPiece } = this.makeBoardPiece(wordObj, 1, 'right');
 
     const chars = wordObj.word.split('');
     const splitIndex = wordObj.splitIndex;
@@ -1026,23 +1015,45 @@ class SyllableGame {
     return button;
   }
 
-  renderPracticeTiles(board, word) {
-    const row = document.createElement('div');
-    if (this.hasAnswered) {
-      row.className = 'board-piece solved-segments';
-      word.syllables.forEach((_, index) => {
-        const button = this.makeSyllableButton(word, index);
-        button.classList.add('dojo-solved-syllable');
-        row.append(button);
-      });
-    } else {
-      row.className = 'board-piece selectable-cuts';
-      const chars = [...word.word];
-      chars.forEach((char, index) => {
-        row.append(this.makeLetter(char, index));
-        if (index + 1 < chars.length) row.append(this.makeCutSlot(chars, index));
-      });
+  makeBoardPiece(word, index, side) {
+    const wrapper = document.createElement('div');
+    const piece = document.createElement('div');
+    wrapper.className = 'board-piece-wrapper';
+    piece.className = 'board-piece';
+    if (side) {
+      wrapper.classList.add(`${side}-piece-wrapper`);
+      piece.classList.add(`${side}-piece`);
+      piece.id = `piece-${side}`;
     }
+    const playButton = this.makeSyllableButton(word, index, piece);
+    if (this.practiceRound) playButton.classList.add('dojo-solved-syllable');
+    wrapper.append(piece, playButton);
+    return { wrapper, piece };
+  }
+
+  renderPracticeCuts(board, word) {
+    const row = document.createElement('div');
+    row.className = 'board-piece selectable-cuts';
+    const chars = [...word];
+    chars.forEach((char, index) => {
+      row.append(this.makeLetter(char, index));
+      if (index + 1 < chars.length) row.append(this.makeCutSlot(chars, index));
+    });
+    board.replaceChildren(row);
+  }
+
+  renderPracticeSolution(board, word) {
+    const row = document.createElement('div');
+    row.className = 'solved-segments';
+    let position = 0;
+    word.syllables.forEach((syllable, index) => {
+      const { wrapper, piece } = this.makeBoardPiece(word, index);
+      for (const char of syllable) {
+        piece.append(this.makeLetter(char, position));
+        position++;
+      }
+      row.append(wrapper);
+    });
     board.replaceChildren(row);
   }
 
@@ -1076,7 +1087,7 @@ class SyllableGame {
       expected.every(cut => this.selectedCuts.has(cut)));
   }
 
-  makeSyllableButton(word, index, piece = null) {
+  makeSyllableButton(word, index, piece) {
     const button = document.createElement('button');
     const syllable = word.syllables[index];
     button.type = 'button';
@@ -1087,11 +1098,10 @@ class SyllableGame {
     button.disabled = true;
     button.onclick = () => {
       this.clearPronunciationHighlight();
-      const highlight = piece || button;
-      highlight.classList.add('highlight-read');
+      piece.classList.add('highlight-read');
       window.soundEngine.speakSingleSyllable(getDojoSyllableSpeech(word)[index]);
       this.pronunciationHighlightTimer = setTimeout(() => {
-        highlight.classList.remove('highlight-read');
+        piece.classList.remove('highlight-read');
       }, 600);
     };
     return button;
@@ -1115,6 +1125,11 @@ class SyllableGame {
     else if (!canSpeak) unavailableReason = '這個瀏覽器沒有語音功能';
     this.btnSpeakWord.disabled = !canSpeak;
     this.btnSpeakWord.title = unavailableReason || '聽單字發音';
+    if (this.hasAnswered) {
+      this.instruction.textContent = canSpeak
+        ? '點音節下方的喇叭，可以重聽那一段。'
+        : `${unavailableReason}，可以先看字母板上的拆法。`;
+    }
     this.boardContainer.querySelectorAll('.syllable-phonetic-badge').forEach(button => {
       button.hidden = !this.hasAnswered;
       button.disabled = !this.hasAnswered || !canSpeak;
@@ -1128,94 +1143,106 @@ class SyllableGame {
   }
 
   gradeAnswer(isCorrect) {
-    const wordObj = this.getCurrentWord();
-
     if (isCorrect) {
-      this.hasAnswered = true;
+      this.finishAnswer(false);
+      return;
+    }
+
+    this.wrongAttempts++;
+    this.combo = 0;
+    this.comboTextEl.textContent = '連擊 x0';
+
+    window.soundEngine.playFailBoing();
+    this.mascot.triggerFail();
+
+    const wordBoard = this.boardContainer.querySelector('.wooden-board');
+    this.boardContainer.classList.add('shake');
+    clearTimeout(this.shakeTimer);
+    this.shakeTimer = setTimeout(() => {
+      if (!wordBoard.isConnected || this.isDestroyed) return;
+      this.boardContainer.classList.remove('shake');
+    }, 450);
+
+    this.hintBubble.classList.add('error-hint');
+    if (this.practiceRound) {
+      this.revealAnswer.hidden = this.wrongAttempts < 2;
+      const retry = this.isHintActive
+        ? '再試一次。跟著發音拍手，每一拍是一個音節，再把聽到的分段標出來。'
+        : '再試一次。聽一遍發音，再調整切點。';
+      this.hintBubble.textContent = this.revealAnswer.hidden ? retry : `${retry}需要時可按「看答案」。`;
+    } else {
+      this.hintBubble.textContent = this.isHintActive
+        ? `再試一次！${this.getCurrentWord().hint || this.currentLevel.ruleDescription}`
+        : '再試一次！選另一個字母空隙，也可以打開提示。';
+    }
+  }
+
+  finishAnswer(revealed) {
+    const word = this.getCurrentWord();
+    const sound = window.soundEngine;
+    this.hasAnswered = true;
+    if (revealed) {
+      this.practiceRevealed++;
+      this.mascot.setState('idle');
+    } else {
       this.combo++;
       this.comboTextEl.textContent = `連擊 x${this.combo}`;
-
-      // 儲存記錄：紀錄成功解出單字與當前連擊
       if (this.practiceRound) {
-        if (!this.hadWrongAttempt) this.practiceFirstTry++;
+        if (!this.wrongAttempts) this.practiceFirstTry++;
       } else {
-        StorageManager.recordWordSolved(this.playerName, wordObj.word, this.combo, this.theme);
+        StorageManager.recordWordSolved(this.playerName, word.word, this.combo, this.theme);
       }
 
-      window.soundEngine.playChopWhoosh();
-
-      const slashFx = this.boardContainer.querySelector('.slash-line-fx');
+      const playEffects = !sound.canSpeak;
+      if (playEffects) sound.playChopWhoosh();
+      const slash = this.boardContainer.querySelector('.slash-line-fx');
       this.mascot.triggerChop(() => {
-        if (this.isDestroyed || !slashFx.isConnected) return;
-        window.soundEngine.playWoodCrack();
-        slashFx.classList.add('slash-active');
+        if (this.isDestroyed || !slash.isConnected) return;
+        slash.classList.add('slash-active');
         this.mascot.triggerWin();
-        window.soundEngine.playSuccessChime();
+        if (playEffects) {
+          sound.playWoodCrack();
+          sound.playSuccessChime();
+        }
       });
-
-      this.boardContainer.classList.add('split');
-      if (this.practiceRound) {
-        this.cutActions.hidden = true;
-        this.renderPracticeTiles(this.boardContainer.querySelector('.wooden-board'), wordObj);
-      } else {
-        this.boardContainer.querySelectorAll('.chop-slot').forEach(button => {
-          button.hidden = true;
-        });
-      }
-      this.updatePronunciationControls();
-      this.hintBubble.classList.remove('error-hint');
-      const answer = document.createElement('span');
-      answer.lang = 'en';
-      answer.textContent = wordObj.syllables.join(' · ');
-      this.hintBubble.replaceChildren(`答對了！這個字有 ${wordObj.syllables.length} 個音節。 `, answer);
-      if (wordObj.phonicsNote) {
-        const note = document.createElement('div');
-        note.className = 'phonics-rule-tag';
-        note.textContent = wordObj.phonicsNote;
-        this.hintBubble.append(note);
-      }
-      const isFinalWord = this.currentWordIndex === this.getCurrentLevel().words.length - 1;
-      this.btnNextWord.textContent = isFinalWord ? '查看過關結果' : '下一題';
-      this.btnNextWord.hidden = false;
-      this.btnNextWord.focus();
-
-      const targets = this.boardContainer.querySelectorAll(this.practiceRound
-        ? '.dojo-solved-syllable'
-        : '.left-piece, .right-piece');
-      window.soundEngine.speakPhonicsSequence(getDojoSyllableSpeech(wordObj), wordObj.word, {
-        onStep: step => targets.forEach((target, index) => {
-          target.classList.toggle('highlight-read', step === index || step === targets.length);
-        }),
-        onDone: () => this.clearPronunciationHighlight()
-      });
-
-    } else {
-      this.hadWrongAttempt = true;
-      this.combo = 0;
-      this.comboTextEl.textContent = `連擊 x0`;
-
-      window.soundEngine.playFailBoing();
-      this.mascot.triggerFail();
-
-      const wordBoard = this.boardContainer.querySelector('.wooden-board');
-      this.boardContainer.classList.add('shake');
-      clearTimeout(this.shakeTimer);
-      this.shakeTimer = setTimeout(() => {
-        if (!wordBoard.isConnected || this.isDestroyed) return;
-        this.boardContainer.classList.remove('shake');
-      }, 450);
-
-      this.hintBubble.classList.add('error-hint');
-      if (this.practiceRound) {
-        this.hintBubble.textContent = this.isHintActive
-          ? '再試一次。跟著發音拍手，每一拍是一個音節，再把聽到的分段標出來。'
-          : '再試一次。可以聽發音，或選同一處取消切點。';
-      } else {
-        this.hintBubble.textContent = this.isHintActive
-          ? `再試一次！${wordObj.hint || this.currentLevel.ruleDescription}`
-          : '再試一次！選另一個字母空隙，也可以打開提示。';
-      }
     }
+
+    clearTimeout(this.shakeTimer);
+    this.boardContainer.classList.remove('shake');
+    this.boardContainer.classList.add('split');
+    if (this.practiceRound) {
+      this.cutActions.hidden = true;
+      this.renderPracticeSolution(this.boardContainer.querySelector('.wooden-board'), word);
+    } else {
+      this.boardContainer.querySelectorAll('.chop-slot').forEach(button => {
+        button.hidden = true;
+      });
+    }
+    this.updatePronunciationControls();
+    this.hintBubble.classList.remove('error-hint');
+    const answer = document.createElement('span');
+    answer.lang = 'en';
+    answer.textContent = word.syllables.join(' · ');
+    const prefix = revealed ? '答案在這裡。' : '答對了！';
+    this.hintBubble.replaceChildren(`${prefix}這個字有 ${word.syllables.length} 個音節。 `, answer);
+    if (word.phonicsNote) {
+      const note = document.createElement('div');
+      note.className = 'phonics-rule-tag';
+      note.textContent = word.phonicsNote;
+      this.hintBubble.append(note);
+    }
+    const isFinalWord = this.currentWordIndex === this.getCurrentLevel().words.length - 1;
+    this.btnNextWord.textContent = isFinalWord ? '查看過關結果' : '下一題';
+    this.btnNextWord.hidden = false;
+    this.btnNextWord.focus();
+
+    const targets = this.boardContainer.querySelectorAll('.board-piece-wrapper > .board-piece');
+    sound.speakPhonicsSequence(getDojoSyllableSpeech(word), word.word, {
+      onStep: step => targets.forEach((target, index) => {
+        target.classList.toggle('highlight-read', step === index || step === targets.length);
+      }),
+      onDone: () => this.clearPronunciationHighlight()
+    });
   }
 
   advanceWord() {
@@ -1238,8 +1265,9 @@ class SyllableGame {
       window.soundEngine.playFanfare();
       this.mascot.triggerWin();
       document.getElementById('upgrade-modal-title').textContent = '音節練習完成！';
+      const revealed = this.practiceRevealed ? `，${this.practiceRevealed} 題看了解答` : '';
       document.getElementById('upgrade-modal-desc').textContent =
-        `完成 ${this.practiceRound.words.length} 題，其中 ${this.practiceFirstTry} 題一次答對。`;
+        `完成 ${this.practiceRound.words.length} 題，其中 ${this.practiceFirstTry} 題一次答對${revealed}。`;
       const next = document.getElementById('btn-next-belt');
       next.textContent = this.practiceRound.settings.source === 'gemini' ? '準備新題目' : '再抽一組';
       this.adjustDojo.hidden = false;

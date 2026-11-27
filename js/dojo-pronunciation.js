@@ -37,6 +37,7 @@ const DOJO_SPEECH_OVERRIDES = {
   'de.fin.i.tion': 'deff ih nish un',
   'dic.tion.ar.y': 'dik shun air ee',
   'dol.phin': 'doll fin',
+  'ea.gle': 'ee gull',
   'e.ras.er': 'ee race er',
   'ed.u.ca.tion': 'ejj uh kay shun',
   'el.e.phant': 'ell uh funt',
@@ -61,12 +62,14 @@ const DOJO_SPEECH_OVERRIDES = {
   'kan.ga.roo': 'kang guh roo',
   'la.bel': 'lay bull',
   'le.gal': 'lee gull',
+  'lem.on': 'lem un',
   'li.brar.y': 'lie brair ee',
   'lo.cal': 'loh kull',
   'mac.a.ro.ni': 'mack uh roh nee',
   'man.a.tee': 'man uh tee',
   'mo.ment': 'moh munt',
   'mo.tor': 'moh ter',
+  'mon.key': 'munk ee',
   'mos.qui.to': 'muss kee toh',
   'moun.tain.eer.ing': 'moun tuh neer ing',
   'no.tice': 'noh tiss',
@@ -111,5 +114,5 @@ for (const [split, speech] of Object.entries(DOJO_SPEECH_OVERRIDES)) {
 
 function getDojoSyllableSpeech(word) {
   if (word.syllables.length === 1) return [word.word];
-  return word.speechSyllables ?? DOJO_SYLLABLE_SPEECH.get(word.syllables.join('.')) ?? word.syllables;
+  return DOJO_SYLLABLE_SPEECH.get(word.syllables.join('.')) ?? word.speechSyllables ?? word.syllables;
 }
