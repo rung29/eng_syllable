@@ -170,6 +170,8 @@ body:has(.practice-app:not([hidden])) {
   margin-top: 16px;
 }
 
+.adventure-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
 .quest-card {
   display: flex;
   min-height: 196px;
@@ -206,8 +208,6 @@ body:has(.practice-app:not([hidden])) {
 .quest-letters { --quest-tint: #dcf0d8; --quest-accent: #285c3a; }
 .quest-words { --quest-tint: #fff0c5; --quest-accent: #75450c; }
 .quest-sentences { --quest-tint: #e8e4fa; --quest-accent: #4e4380; }
-.quest-dojo { --quest-tint: #dceef5; --quest-accent: #225768; }
-.quest-dojo .quest-symbol { font-size: 1.5rem; }
 .quest-emoji { font-size: 1.9rem; }
 
 .quest-speech {
@@ -463,15 +463,29 @@ body:has(.practice-app:not([hidden])) {
 .practice-review-list li { padding: 7px 0; line-height: 1.55; }
 
 .dojo-instruction { text-align: center; font-weight: 750; line-height: 1.5; }
-.dojo-settings-entry {
-  display: flex;
+.nav-label-button {
+  display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  margin-top: 10px;
+  gap: 6px;
+  white-space: nowrap;
 }
 
+.nav-label-button [aria-hidden="true"] { font-size: 1.15em; }
+.dojo-top-nav {
+  position: relative;
+  z-index: 11;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 8px clamp(12px, 3vw, 28px);
+  background: #eaf2e6;
+  border-bottom: 1px solid #cbdacf;
+}
+
+.belt-picker { position: relative; }
 #dojo-prepared-notice { color: var(--quest-green); font-weight: 700; }
+#dojo-prepared-notice:not(:empty) { margin-top: 8px; }
 
 .dojo-settings {
   position: fixed;

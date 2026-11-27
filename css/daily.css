@@ -135,6 +135,7 @@
 
 .daily-records-tag.is-due { background: #ffebbf; color: #633c13; }
 .daily-records-rule { margin-top: 13px; }
+.daily-records-practice { margin-top: 5px; }
 
 @media (max-width: 550px) {
   .adventure-header-tools { justify-content: flex-start; }

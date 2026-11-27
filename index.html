@@ -32,6 +32,9 @@
             <button type="button" id="btn-cancel-new-player" class="btn-player-action btn-cancel" title="取消">✖</button>
           </div>
         </div>
+        <button type="button" class="practice-home nav-label-button" id="btn-dojo-settings-home" data-open-dojo-settings>
+          <span aria-hidden="true">⚙️</span> 音節出題設定
+        </button>
         <button type="button" class="btn-leaderboard" id="btn-landing-leaderboard">
           <span aria-hidden="true">🏆</span> 道館排行榜
         </button>
@@ -78,24 +81,15 @@
           <span class="quest-description">填入正確的字，讀懂簡短句子</span>
           <span class="quest-best" data-practice-best="sentences">尚未挑戰</span>
         </button>
-        <a class="quest-card quest-dojo" href="#dojo-characters">
-          <span class="quest-symbol" aria-hidden="true" lang="en">pan·cake</span>
-          <span class="quest-title">音節道館</span>
-          <span class="quest-description">在字母之間下刀，拆開單字</span>
-          <span class="quest-best">選擇冒險夥伴</span>
-        </a>
       </div>
     </section>
 
     <section class="adventure-dojo" id="dojo-characters" aria-labelledby="dojo-characters-title">
       <div class="adventure-dojo-heading">
         <div>
-          <h2 id="dojo-characters-title">音節道館夥伴</h2>
+          <h2 id="dojo-characters-title" tabindex="-1">音節道館夥伴</h2>
           <p class="adventure-section-note">選一位夥伴練習拆音節，挑戰五條腰帶。</p>
-          <div class="dojo-settings-entry">
-            <button type="button" class="practice-home" id="btn-dojo-settings-home" data-open-dojo-settings>音節出題設定</button>
-            <p id="dojo-prepared-notice" role="status"></p>
-          </div>
+          <p id="dojo-prepared-notice" role="status"></p>
         </div>
       </div>
       <div class="character-select-row">
@@ -137,7 +131,7 @@
 
   <main id="shop-app" class="shop-app" aria-labelledby="shop-title" hidden>
     <header class="shop-header">
-      <button type="button" class="practice-home" id="btn-shop-home">回到首頁</button>
+      <button type="button" class="practice-home nav-label-button" id="btn-shop-home"><span aria-hidden="true">🏠</span> 回到首頁</button>
       <h1 id="shop-title">森林商店</h1>
       <p id="shop-progress-text"></p>
     </header>
@@ -155,10 +149,18 @@
 
   <main id="practice-app" class="practice-app" aria-labelledby="practice-title" hidden>
     <header class="practice-header">
-      <button type="button" class="practice-home" data-practice-home>回到首頁</button>
+      <button type="button" class="practice-home nav-label-button" data-practice-home><span aria-hidden="true">🏠</span> 回到首頁</button>
       <h1 id="practice-title" tabindex="-1">冒險關卡</h1>
     </header>
     <div id="practice-view" class="practice-view"></div>
+  </main>
+
+  <main id="concept-practice-app" class="practice-app is-daily" aria-labelledby="concept-practice-title" hidden>
+    <header class="practice-header">
+      <button type="button" class="practice-home" data-concept-return>回複習紀錄</button>
+      <h1 id="concept-practice-title" tabindex="-1">概念練習</h1>
+    </header>
+    <div class="practice-view"></div>
   </main>
 
   <main id="daily-records-app" class="practice-app daily-records-app" aria-labelledby="daily-records-title" hidden>
@@ -186,13 +188,18 @@
       <div class="dojo-floor-wood"></div>
     </div>
 
+    <nav class="dojo-top-nav" aria-label="音節道館導覽">
+      <button type="button" class="btn-back-to-select nav-label-button" id="btn-back-select">
+        <span aria-hidden="true">🏠</span> 回到首頁
+      </button>
+      <button type="button" class="practice-home nav-label-button" data-open-dojo-settings>
+        <span aria-hidden="true">⚙️</span> 音節出題設定
+      </button>
+    </nav>
+
     <!-- 頂部資訊與控制欄 -->
     <header class="dojo-header">
       <div class="header-left">
-        <!-- 返回選角按鈕 -->
-        <button type="button" class="btn-back-to-select" id="btn-back-select" aria-label="回到首頁" title="回到首頁">
-          <span aria-hidden="true">⌂</span>
-        </button>
         <div class="dojo-title-badge">
           <span class="dojo-logo-icon" id="game-logo-icon">🥋</span>
           <div class="dojo-title-text">
@@ -202,11 +209,14 @@
         </div>
 
         <!-- 腰帶階級選擇按鈕 (點擊展開關卡) -->
-        <button type="button" class="belt-selector" id="belt-selector-btn" aria-controls="level-select-modal" aria-expanded="false" title="切換道館等級">
-          <span class="belt-indicator" id="current-belt-indicator"></span>
-          <span class="belt-name" id="current-belt-name">白帶修煉</span>
-          <span aria-hidden="true" class="belt-chevron"></span>
-        </button>
+        <div class="belt-picker">
+          <button type="button" class="belt-selector" id="belt-selector-btn" aria-controls="level-select-modal" aria-expanded="false" title="切換道館等級">
+            <span class="belt-indicator" id="current-belt-indicator"></span>
+            <span class="belt-name" id="current-belt-name">白帶修煉</span>
+            <span aria-hidden="true" class="belt-chevron"></span>
+          </button>
+          <div class="level-select-modal" id="level-select-modal"></div>
+        </div>
       </div>
 
       <!-- 頂部右側控制項 -->
@@ -229,7 +239,6 @@
         </button>
 
         <!-- 查看排行榜按鈕 -->
-        <button type="button" class="btn-icon-circle" data-open-dojo-settings aria-label="音節出題設定" title="音節出題設定">⚙️</button>
         <button class="btn-icon-circle" id="btn-game-leaderboard" title="查看道場榮譽排行榜">🏆</button>
 
         <!-- 靜音開關 -->
@@ -274,9 +283,6 @@
         </div>
       </div>
     </div>
-
-    <!-- 關卡選單下拉彈窗 -->
-    <div class="level-select-modal" id="level-select-modal"></div>
 
     <!-- 晉級榮耀彈窗 -->
     <div class="modal-overlay" id="upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="upgrade-modal-title">

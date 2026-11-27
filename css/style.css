@@ -533,9 +533,9 @@ body {
 
 /* 返回角色選擇按鈕 */
 .btn-back-to-select {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  min-height: 44px;
+  padding: 7px 12px;
+  border-radius: 11px;
   border: 2px solid #D7CCC8;
   background: #FFFFFF;
   color: #5D4037;
@@ -1834,8 +1834,9 @@ body {
 /* 關卡選單下拉彈窗 */
 .level-select-modal {
   position: absolute;
-  top: 75px;
-  left: 28px;
+  top: calc(100% + 5px);
+  left: 0;
+  min-width: max-content;
   background: #FFFDF9;
   border: 3px solid #BCAAA4;
   border-radius: 16px;
@@ -2147,6 +2148,9 @@ body {
     gap: 8px;
   }
 
+  .header-left { position: relative; }
+  .header-left .belt-picker { position: static; }
+
   .rule-banner {
     padding-inline: 12px;
   }
@@ -2154,10 +2158,6 @@ body {
   .dojo-arena {
     gap: 22px;
     padding-inline: 12px;
-  }
-
-  .level-select-modal {
-    left: 12px;
   }
 
   .wooden-board {

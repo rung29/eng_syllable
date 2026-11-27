@@ -25,6 +25,10 @@ const DAILY_CONCEPTS = {
 const DAILY_NEW_QUESTIONS = [
   { id: 'i-am-ready', concept: 'be-am', template: 'I ___ ready.', zh: '我準備好了。', choices: ['am', 'is', 'are'], answer: 'am', hint: '句子的主詞是 I。', explanation: 'I 和 am 搭配。' },
   { id: 'i-am-eight', concept: 'be-am', template: 'I ___ eight.', zh: '我八歲。', choices: ['am', 'is', 'are'], answer: 'am', hint: '看看句子的第一個字。', explanation: '說自己的年齡用 I am。' },
+  { id: 'i-am-at-home', concept: 'be-am', template: 'I ___ at home.', zh: '我在家。', choices: ['am', 'is', 'are'], answer: 'am', hint: '句子在說「我」。', explanation: 'I 和 am 搭配。' },
+  { id: 'it-is-cold', concept: 'be-is', template: 'It ___ cold today.', zh: '今天很冷。', choices: ['am', 'is', 'are'], answer: 'is', hint: '看看開頭的主詞 It。', explanation: '說天氣時，It 和 is 搭配。' },
+  { id: 'mimi-is-reading', concept: 'be-is', template: 'Mimi ___ reading.', zh: '咪喵正在看書。', choices: ['am', 'is', 'are'], answer: 'is', hint: 'Mimi 指一位角色。', explanation: '單數主詞 Mimi 和 is 搭配。' },
+  { id: 'dogs-are-outside', concept: 'be-are', template: 'The dogs ___ outside.', zh: '那些狗在外面。', choices: ['am', 'is', 'are'], answer: 'are', hint: 'dogs 指的是好幾隻狗。', explanation: '複數主詞 the dogs 和 are 搭配。' },
   { id: 'an-insect', concept: 'article-an', template: 'Look! It is ___ insect.', zh: '看！那是一隻昆蟲。', choices: ['a', 'an'], answer: 'an', hint: '聽一聽 insect 的第一個音。', explanation: 'insect 的開頭是母音聲音，用 an。' },
   { id: 'an-orange', concept: 'article-an', template: 'Please give me ___ orange.', zh: '請給我一顆柳橙。', choices: ['a', 'an'], answer: 'an', hint: '念念看 orange 的第一個音。', explanation: 'orange 的開頭是母音聲音，用 an。' },
   { id: 'a-sandwich', concept: 'article-a', template: 'Mimi has ___ sandwich.', zh: '咪喵有一份三明治。', choices: ['a', 'an'], answer: 'a', hint: '聽聽 sandwich 的 s 音。', explanation: 'sandwich 的開頭是子音聲音，用 a。' },
@@ -32,21 +36,26 @@ const DAILY_NEW_QUESTIONS = [
   { id: 'some-milk', concept: 'some-food', template: 'I want ___ milk.', zh: '我想要一些牛奶。', choices: ['some', 'an', 'one'], answer: 'some', hint: '想想哪一個字表示「一些」。', explanation: 'some milk 表示「一些牛奶」。' },
   { id: 'some-water', concept: 'some-food', template: 'Can I have ___ water?', zh: '我可以喝一些水嗎？', choices: ['a', 'some', 'an'], answer: 'some', hint: '水可以說「一些」，你會用哪個字？', explanation: 'some water 表示「一些水」。' },
   { id: 'some-rice', concept: 'some-food', template: 'Please give me ___ rice.', zh: '請給我一些飯。', choices: ['one', 'a', 'some'], answer: 'some', hint: '這裡要說「一些」，不用數飯粒。', explanation: 'some rice 表示「一些飯」。' },
+  { id: 'some-juice', concept: 'some-food', template: 'There is ___ juice in the glass.', zh: '杯子裡有些果汁。', choices: ['a', 'some', 'an'], answer: 'some', hint: '想想「一些」怎麼說。', explanation: 'some juice 表示「一些果汁」。' },
   { id: 'two-books', concept: 'plural-quantity', template: 'I have two ___.', zh: '我有兩本書。', choices: ['book', 'books'], answer: 'books', hint: 'two 表示兩個。', explanation: '兩本書要說 two books。' },
   { id: 'three-cats', concept: 'plural-quantity', template: 'I see three ___.', zh: '我看到三隻貓。', choices: ['cat', 'cats'], answer: 'cats', hint: '超過一隻要用複數。', explanation: '三隻貓要說 three cats。' },
   { id: 'two-cups', concept: 'plural-quantity', template: 'Please find two ___.', zh: '請找兩個杯子。', choices: ['cup', 'cups'], answer: 'cups', hint: '想想 cup 的複數。', explanation: '兩個杯子要說 two cups。' },
+  { id: 'four-pens', concept: 'plural-quantity', template: 'She has four ___.', zh: '她有四支筆。', choices: ['pen', 'pens'], answer: 'pens', hint: 'four 表示四個。', explanation: '四支筆要說 four pens。' },
   { id: 'order-a-kite', concept: 'word-order', zh: '我有一個風箏。', choices: ['I have a kite.', 'Have I a kite.', 'I a kite have.'], answer: 'I have a kite.', hint: '「我有」先說 I have。', explanation: '先說主詞 I，再說 have a kite。' },
   { id: 'order-see-dog', concept: 'word-order', zh: '我看見一隻狗。', choices: ['I see a dog.', 'I a dog see.', 'See a dog I.'], answer: 'I see a dog.', hint: '先說「我看見」I see。', explanation: '先說主詞 I，再說 see a dog。' },
-  { id: 'order-like-juice', concept: 'word-order', zh: '我喜歡果汁。', choices: ['I like juice.', 'Like I juice.', 'Juice like I.'], answer: 'I like juice.', hint: '先說「我喜歡」I like。', explanation: '先說主詞 I，再說 like juice。' }
+  { id: 'order-like-juice', concept: 'word-order', zh: '我喜歡果汁。', choices: ['I like juice.', 'Like I juice.', 'Juice like I.'], answer: 'I like juice.', hint: '先說「我喜歡」I like。', explanation: '先說主詞 I，再說 like juice。' },
+  { id: 'order-need-cup', concept: 'word-order', zh: '我需要一個杯子。', choices: ['I need a cup.', 'Need I a cup.', 'I a cup need.'], answer: 'I need a cup.', hint: '先說「我需要」I need。', explanation: '先說主詞 I，再說 need a cup。' }
 ];
 
 const DAILY_LISTENING = [
   ['shop-listening', 'listen-bread-cheese', 'Please get bread and cheese.', ['🍞 麵包和起司', '🍞 麵包和牛奶', '🧀 起司和蘋果'], 'bread 是麵包，cheese 是起司。'],
   ['shop-listening', 'listen-pear-orange', 'Find a pear and an orange.', ['🍐 梨子和柳橙', '🍌 香蕉和柳橙', '🍐 梨子和蘋果'], 'pear 是梨子，orange 是柳橙。'],
   ['shop-listening', 'listen-milk-banana', 'Get a glass of milk and a banana.', ['🥛 牛奶和香蕉', '🧃 果汁和香蕉', '🥛 牛奶和蘋果'], 'milk 是牛奶，banana 是香蕉。'],
+  ['shop-listening', 'listen-egg-carrot', 'Find an egg and a carrot.', ['🥚 蛋和胡蘿蔔', '🥚 蛋和梨子', '🥕 胡蘿蔔和香蕉'], 'egg 是蛋，carrot 是胡蘿蔔。'],
   ['shop-quantity', 'listen-two-apples', 'Put two apples in the basket.', ['2 顆蘋果', '1 顆蘋果', '3 顆蘋果'], 'two apples 是兩顆蘋果。'],
   ['shop-quantity', 'listen-three-carrots', 'Bring three carrots, please.', ['3 根胡蘿蔔', '2 根胡蘿蔔', '1 根胡蘿蔔'], 'three carrots 是三根胡蘿蔔。'],
-  ['shop-quantity', 'listen-one-pear', 'Can I have one pear, please?', ['1 顆梨子', '2 顆梨子', '3 顆梨子'], 'one pear 是一顆梨子。']
+  ['shop-quantity', 'listen-one-pear', 'Can I have one pear, please?', ['1 顆梨子', '2 顆梨子', '3 顆梨子'], 'one pear 是一顆梨子。'],
+  ['shop-quantity', 'listen-two-bananas', 'Put two bananas in the basket.', ['2 根香蕉', '1 根香蕉', '3 根香蕉'], 'two bananas 是兩根香蕉。']
 ];
 
 const DAILY_RETRY_DAYS = 2;
@@ -193,4 +202,22 @@ function buildDailyReviewRound(player, day = dailyDay()) {
   warmup.push(...standard.filter(concept => !warmup.includes(concept)));
   chosen.push(...warmup.slice(0, 6 - chosen.length).map(concept => dailyPickQuestion(concept, overview.review, false)));
   return { ...overview, questions: chosen.filter(Boolean) };
+}
+
+function buildConceptPracticeRound(player, concept) {
+  if (!Object.hasOwn(DAILY_CONCEPTS, concept)) return [];
+  const review = readDailyReview(player);
+  const previous = review.entries[concept]?.variant;
+  const pool = new Map(dailyVariants(concept).map(item => [item.id, item]));
+  const alternatives = shufflePracticeItems([...pool.values()].filter(item => item.id !== previous));
+  const fresh = [];
+  const seen = [];
+  for (const item of alternatives) {
+    (review.recent.includes(`${concept}/${item.id}`) ? seen : fresh).push(item);
+  }
+  return [...fresh, ...seen].slice(0, 3).map(item => ({
+    ...item,
+    concept,
+    choices: shufflePracticeItems(item.choices)
+  }));
 }

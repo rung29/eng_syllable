@@ -28,21 +28,24 @@ function readPracticeBest() {
 }
 
 class PracticeController {
-  constructor() {
+  constructor(app, { conceptOnly = false } = {}) {
     this.landing = document.getElementById('landing-screen');
-    this.app = document.getElementById('practice-app');
-    this.view = document.getElementById('practice-view');
-    this.title = document.getElementById('practice-title');
+    this.app = app;
+    this.view = app.querySelector('.practice-view');
+    this.title = app.querySelector('h1');
     this.best = readPracticeBest();
     this.previousRounds = {};
     this.canSpeak = Boolean(window.speechSynthesis && window.SpeechSynthesisUtterance);
 
-    if (!this.landing || !this.app || !this.view || !this.title) return;
+    if (conceptOnly) {
+      app.querySelector('[data-concept-return]').onclick = () => this.goHome();
+      return;
+    }
 
     for (const button of document.querySelectorAll('[data-practice-mode]')) {
       button.addEventListener('click', () => this.open(button));
     }
-    for (const button of document.querySelectorAll('[data-practice-home]')) {
+    for (const button of app.querySelectorAll('[data-practice-home]')) {
       button.addEventListener('click', () => this.goHome());
     }
     this.updateBestLabels();
@@ -84,19 +87,37 @@ class PracticeController {
     else this.startRound();
   }
 
+  openConcept(player, concept, recordsApp, onReturn) {
+    const questions = buildConceptPracticeRound(player, concept);
+    if (!questions.length) return;
+    this.mode = 'concept';
+    this.playerName = player;
+    this.conceptPlan = { concept, questions };
+    this.onConceptReturn = onReturn;
+    recordsApp.hidden = true;
+    this.app.hidden = false;
+    this.startRound();
+  }
+
   goHome() {
     this.stopSpeech();
     this.app.hidden = true;
+    this.view.replaceChildren();
+    if (this.mode === 'concept') {
+      const onReturn = this.onConceptReturn;
+      this.onConceptReturn = null;
+      onReturn?.();
+      return;
+    }
     this.landing.hidden = false;
     this.homeFocus?.focus();
-    this.view.replaceChildren();
   }
 
   startRound() {
     try {
-      this.questions = this.mode === 'daily'
-        ? this.dailyPlan.questions
-        : buildPracticeRound(this.mode, this.previousRounds[this.mode]);
+      if (this.mode === 'daily') this.questions = this.dailyPlan.questions;
+      else if (this.mode === 'concept') this.questions = this.conceptPlan.questions;
+      else this.questions = buildPracticeRound(this.mode, this.previousRounds[this.mode]);
     } catch (error) {
       console.error(error);
       const message = practiceElement('h2', 'practice-result-title', '這一組題目暫時無法開啟。');
@@ -172,7 +193,7 @@ class PracticeController {
 
     const card = practiceElement('article', 'practice-question');
     const instructions = practiceElement('p', 'practice-instruction', instruction);
-    instructions.id = 'practice-instruction';
+    instructions.id = `${this.app.id}-instruction`;
     const heading = practiceElement('h2', 'practice-prompt');
     heading.tabIndex = -1;
     heading.setAttribute('aria-describedby', instructions.id);
@@ -187,7 +208,7 @@ class PracticeController {
     card.append(instructions, heading);
     if (context) {
       const translation = practiceElement('p', 'practice-context', context);
-      translation.id = 'practice-context';
+      translation.id = `${this.app.id}-context`;
       heading.setAttribute('aria-describedby', `${instructions.id} ${translation.id}`);
       card.append(translation);
     }
@@ -232,7 +253,8 @@ class PracticeController {
       options.append(button);
       return button;
     });
-    if (this.mode !== 'daily') card.append(options);
+    const reviewLayout = this.mode === 'daily' || this.mode === 'concept';
+    if (!reviewLayout) card.append(options);
 
     this.feedback = practiceElement('p', 'practice-feedback');
     this.feedback.setAttribute('role', 'status');
@@ -248,8 +270,8 @@ class PracticeController {
     this.helpButton.onclick = () => this.showHelp();
     actions.append(this.helpButton, this.next);
     this.view.replaceChildren(meta, this.progress);
-    if (this.mode === 'daily') {
-      const kind = this.question.dueReview ? '到期複習' : '暖身題';
+    if (reviewLayout) {
+      const kind = this.mode === 'concept' ? `小勇士 ${this.playerName}` : this.question.dueReview ? '到期複習' : '暖身題';
       this.view.append(practiceElement('p', 'daily-kind', kind),
         card, practiceElement('h3', 'daily-choice-title', '選擇答案'), options);
     } else {
@@ -324,6 +346,10 @@ class PracticeController {
 
   renderResult() {
     this.stopSpeech();
+    if (this.mode === 'concept') {
+      this.renderConceptResult();
+      return;
+    }
     if (this.mode === 'daily') {
       this.renderDailyResult();
       return;
@@ -354,6 +380,25 @@ class PracticeController {
     actions.append(replay, home);
     result.append(actions);
     this.view.replaceChildren(result);
+    heading.focus();
+  }
+
+  renderConceptResult() {
+    const heading = practiceElement('h2', 'daily-heading', '概念練習完成！');
+    heading.tabIndex = -1;
+    const summary = practiceSummary([
+      ['小勇士', this.playerName],
+      ['練習概念', DAILY_CONCEPTS[this.conceptPlan.concept]],
+      ['一次答對', `${this.firstCorrect} / ${this.questions.length} 題`]
+    ]);
+    const actions = practiceElement('div', 'practice-actions');
+    const back = practiceElement('button', 'practice-primary', '回複習紀錄');
+    back.type = 'button';
+    back.onclick = () => this.goHome();
+    actions.append(back);
+    this.view.replaceChildren(heading, summary);
+    if (this.mistakes.length) this.view.append(this.makeReview());
+    this.view.append(actions);
     heading.focus();
   }
 
@@ -465,5 +510,6 @@ function practiceSummary(items) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  window.practiceController = new PracticeController();
+  window.practiceController = new PracticeController(document.getElementById('practice-app'));
+  window.conceptPracticeController = new PracticeController(document.getElementById('concept-practice-app'), { conceptOnly: true });
 });

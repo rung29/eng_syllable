@@ -315,6 +315,7 @@ class DojoSettingsController {
     } else {
       window.landingController.nextDojoRound = round;
       document.getElementById('dojo-prepared-notice').textContent = `已準備 ${round.words.length} 題。選一位夥伴開始！`;
+      document.getElementById('dojo-characters-title').focus();
     }
   }
 

@@ -93,6 +93,15 @@ class DailyRecords {
         details.append(practiceElement('p', 'daily-note',
           `換題一次答對 ${entry.step} / ${DAILY_MASTERY_STREAK}`));
       }
+      const practice = practiceElement('button', 'practice-home daily-records-practice', '練習這個概念');
+      practice.type = 'button';
+      practice.setAttribute('aria-label', `練習這個概念，${DAILY_CONCEPTS[key]}`);
+      practice.onclick = () => window.conceptPracticeController.openConcept(this.player.value, key, this.app, () => {
+        this.app.hidden = false;
+        this.render();
+        this.view.querySelector(`[data-review-concept="${key}"] .daily-records-practice`)?.focus();
+      });
+      details.append(practice);
       row.append(concept, details);
       list.append(row);
     }
